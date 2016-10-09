@@ -132,7 +132,7 @@ class CUnzip:
         DstData = __gziper.read()
         return DstData
 
-def GetWorkBody(cForm):
+def GetWorkBody(cForm, bAgain):
     Data = "--%s\r\n" % boundary
     Data += "Content-Disposition: form-data; name=\"PRCS_TO\"\r\n"
     Data += "\r\n"
@@ -351,6 +351,15 @@ def GetWorkBody(cForm):
     Data += "Content-Disposition: form-data; name=\"SIGN_DATA\"\r\n"
     Data += "\r\n"
     Data += "\r\n"
+    if (1 == bAgain):
+        Data += "--%s\r\n" % boundary
+        Data += "Content-Disposition: form-data; name=\"SMS_CONTENT\"\r\n"
+        Data += "\r\n"
+        Data += "工作已结束，流水号：%s，工作名称/文号：%s\r\n" % (cForm.run_id, cForm.run_name)
+        Data += "--%s\r\n" % boundary
+        Data += "Content-Disposition: form-data; name=\"remind_others_id\"\r\n"
+        Data += "\r\n"
+        Data += "\r\n"
     Data += "--%s--\r\n" % boundary
     Data += "\r\n"
     return Data
@@ -421,13 +430,14 @@ if __name__ == "__main__":
         print ("请求失败")
         sys.exit();
     #再次请求
-    cHttp.ReqUrl = """/general/workflow/list/input_form/?MENU_FLAG=&RUN_ID=%s
-    &FLOW_ID=%s&PRCS_ID=%s&FLOW_PRCS=%s&AUTO_NEW=1&PRCS_KEY_ID=%s""" % \
+    cHttp.ReqUrl = "/general/workflow/list/input_form/?MENU_FLAG=&"
+    cHttp.ReqUrl += "RUN_ID=%s&FLOW_ID=%s&PRCS_ID=%s&FLOW_PRCS=%s&AUTO_NEW=1&PRCS_KEY_ID=%s" % \
                    (cForm.run_id, cForm.flow_id, cForm.prcs_id, cForm.flow_prcs, cForm.prcs_key_id)
     cHttp.SendReq(conn, "GET")
-    ResData = cHttp.RecvRes(conn).decode("GBK").encode("utf8")
+    ResData = cHttp.RecvRes(conn)
+    Data = cUnzip.Decompress(ResData).decode("GBK").encode("utf8")
     #RUN_NAME; RUN_NAME_OLD
-    RegexResult = re.search(r'en_run_name.*?=[\s\S]*?run_name.*?= "(.*?)"', ResData, re.M|re.I)
+    RegexResult = re.search(r'en_run_name.*?=[\s\S]*?run_name.*?= "(.*?)"', Data, re.M|re.I)
     cForm.run_name = urllib.unquote(RegexResult.group(1))
     cForm.run_name_old = cForm.run_name
     print (cForm.run_name)
@@ -456,6 +466,11 @@ if __name__ == "__main__":
     cHttp.ReqHeader.setdefault({"Origin":"http://do.sanhuid.com"})
     cHttp.ReqHeader.setdefault({"Upgrade-Insecure-Requests":"1"})
     cHttp.ReqHeader.setdefault({"Content":"multipart/form-data; boundary=%s"} % boundary)
-    cHttp.ReqBody = GetWorkBody(cForm)
+    cHttp.ReqBody = GetWorkBody(cForm, 0)
+    cHttp.SendReq(conn, "POST")
+    ResData = cHttp.RecvRes(conn)
+
+    #第二次提交表单
+    cHttp.ReqBody = GetWorkBody(cForm, 1)
     cHttp.SendReq(conn, "POST")
     ResData = cHttp.RecvRes(conn)

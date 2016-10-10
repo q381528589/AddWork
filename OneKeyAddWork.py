@@ -12,9 +12,9 @@ import time
 #基本参数
 username = "钱嘉欢"
 password = "sh88861158"
-bus = 1
+bus = 0
 reason = "加班"
-boundary=""
+boundary="----WebKitFormBoundaryaitCKZqFKOlOn5nd"
 
 #数据编码
 username = username.decode("utf8").encode("GBK")
@@ -440,9 +440,8 @@ if __name__ == "__main__":
     RegexResult = re.search(r'en_run_name.*?=[\s\S]*?run_name.*?= "(.*?)"', Data, re.M|re.I)
     cForm.run_name = urllib.unquote(RegexResult.group(1))
     cForm.run_name_old = cForm.run_name
-    print (cForm.run_name)
     #NAME; GROUP; DATE
-    RegexResult = re.search(r'（.*?）(.*?)-(.*)', cForm.run_name, re.I)
+    RegexResult = re.search(r'（(.*?)）(.*?)-(.*)', cForm.run_name, re.I)
     cForm.data_91 = RegexResult.group(1)
     cForm.data_70 = RegexResult.group(2)
     cForm.data_68 = RegexResult.group(3)
@@ -462,10 +461,10 @@ if __name__ == "__main__":
 
     #加班申请，组装Body数据
     cHttp.ReqUrl = "/general/workflow/list/input_form/input_submit.php"
-    cHttp.ReqHeader.setdefault({"Cache-Control":"max-age=0"})
-    cHttp.ReqHeader.setdefault({"Origin":"http://do.sanhuid.com"})
-    cHttp.ReqHeader.setdefault({"Upgrade-Insecure-Requests":"1"})
-    cHttp.ReqHeader.setdefault({"Content":"multipart/form-data; boundary=%s"} % boundary)
+    cHttp.ReqHeader.setdefault("Cache-Control", "max-age=0")
+    cHttp.ReqHeader.setdefault("Origin", "http://do.sanhuid.com")
+    cHttp.ReqHeader.setdefault("Upgrade-Insecure-Requests", "1")
+    cHttp.ReqHeader.setdefault("Content", "multipart/form-data; boundary=%s" % boundary)
     cHttp.ReqBody = GetWorkBody(cForm, 0)
     cHttp.SendReq(conn, "POST")
     ResData = cHttp.RecvRes(conn)

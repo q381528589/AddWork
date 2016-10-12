@@ -55,7 +55,7 @@ class CCookie:
         self.Temp = self.Temp + "USER_NAME_COOKIE=" + self.UserNameCookie + "; "
         self.Temp = self.Temp + "OA_USER_ID=" + self.OAUserId + "; "
         self.Temp = self.Temp + "SID_" + self.OAUserId + "=" + self.SID + "; "
-        self.Temp = self.Temp + "creat_work" + self.CreakWork
+        self.Temp = self.Temp + "creat_work=" + self.CreakWork
         return self.Temp
 
 #加班表单填表数据
@@ -136,27 +136,36 @@ def GetWorkBody(cForm, bAgain):
     Data = "--%s\r\n" % boundary
     Data += "Content-Disposition: form-data; name=\"PRCS_TO\"\r\n"
     Data += "\r\n"
-    Data += "\r\n"
+    if (1 == bAgain):
+        Data += "0,\r\n"
+    else:
+        Data += "\r\n"
     Data += "--%s\r\n" % boundary
     Data += "Content-Disposition: form-data; name=\"webtype\"\r\n"
     Data += "\r\n"
     Data += "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 UBrowser/5.7.15319.202 Safari/537.36\r\n"
     Data += "--%s\r\n" % boundary
-    Data += "Content-Disposition: form-data; name=\"PRCS_CHOOSE\"r\n"
+    Data += "Content-Disposition: form-data; name=\"PRCS_CHOOSE\"\r\n"
     Data += "\r\n"
     Data += "\r\n"
     Data += "--%s\r\n" % boundary
-    Data += "Content-Disposition: form-data; name=\"RUN_PRCS_NAME\"r\n"
+    Data += "Content-Disposition: form-data; name=\"RUN_PRCS_NAME\"\r\n"
     Data += "\r\n"
     Data += "\r\n"
     Data += "--%s\r\n" % boundary
     Data += "Content-Disposition: form-data; name=\"next_prcs_num\"\r\n"
     Data += "\r\n"
-    Data += "\r\n"
+    if (1 == bAgain):
+        Data += "0\r\n"
+    else:
+        Data += "\r\n"
     Data += "--%s\r\n" % boundary
     Data += "Content-Disposition: form-data; name=\"info_str\"\r\n"
     Data += "\r\n"
-    Data += "\r\n"
+    if (1 == bAgain):
+        Data += "0,0,0,1,0,0,0,0,0,\r\n"
+    else:
+        Data += "\r\n"
     Data += "--%s\r\n" % boundary
     Data += "Content-Disposition: form-data; name=\"Symbol\"\r\n"
     Data += "\r\n"
@@ -176,7 +185,10 @@ def GetWorkBody(cForm, bAgain):
     Data += "--%s\r\n" % boundary
     Data += "Content-Disposition: form-data; name=\"SAVE_FLAG\"\r\n"
     Data += "\r\n"
-    Data += "t" + "\r\n"
+    if (1 == bAgain):
+        Data += "tok\r\n"
+    else:
+        Data += "t\r\n"
     Data += "--%s\r\n" % boundary
     Data += "Content-Disposition: form-data; name=\"FLOW_TYPE\"\r\n"
     Data += "\r\n"
@@ -194,7 +206,7 @@ def GetWorkBody(cForm, bAgain):
     Data += "\r\n"
     Data += "%s\r\n" % cForm.run_name
     Data += "--%s\r\n" % boundary
-    Data += "Content-Disposition: form-data; name=\"FLOW_ID\""
+    Data += "Content-Disposition: form-data; name=\"FLOW_ID\"\r\n"
     Data += "\r\n"
     Data += "%s\r\n" % cForm.flow_id
     Data += "--%s\r\n" % boundary
@@ -332,7 +344,7 @@ def GetWorkBody(cForm, bAgain):
     Data += "\r\n"
     Data += "--%s\r\n" % boundary
     Data += "Content-Disposition: form-data; name=\"ATTACHMENT1_0\"; filename=\"\"\r\n"
-    Data += "Content-Type: application/octet-stream"
+    Data += "Content-Type: application/octet-stream\r\n"
     Data += "\r\n"
     Data += "\r\n"
     Data += "--%s\r\n" % boundary
@@ -362,7 +374,7 @@ def GetWorkBody(cForm, bAgain):
         Data += "\r\n"
     Data += "--%s--\r\n" % boundary
     Data += "\r\n"
-    return Data
+    return Data.decode("utf8").encode("GBK")
 
 if __name__ == "__main__":
     #Http登录头部定义
@@ -459,12 +471,18 @@ if __name__ == "__main__":
     #Reason
     cForm.data_73 = reason
 
+    #提交当前用户名
+    cHttp.ReqUrl = "/general/workflow/list/input_form/run_name_submit.php"
+    cHttp.ReqHeader.setdefault("Origin", "http://do.sanhuid.com")
+    cHttp.ReqBody = ""
+    cHttp.SendReq(conn, "POST")
+    ResData = cHttp.RecvRes(conn)
+
     #加班申请，组装Body数据
     cHttp.ReqUrl = "/general/workflow/list/input_form/input_submit.php"
     cHttp.ReqHeader.setdefault("Cache-Control", "max-age=0")
-    cHttp.ReqHeader.setdefault("Origin", "http://do.sanhuid.com")
     cHttp.ReqHeader.setdefault("Upgrade-Insecure-Requests", "1")
-    cHttp.ReqHeader.setdefault("Content", "multipart/form-data; boundary=%s" % boundary)
+    cHttp.ReqHeader.setdefault("Content-Type", "multipart/form-data; boundary=%s" % boundary)
     cHttp.ReqBody = GetWorkBody(cForm, 0)
     cHttp.SendReq(conn, "POST")
     ResData = cHttp.RecvRes(conn)
@@ -473,3 +491,17 @@ if __name__ == "__main__":
     cHttp.ReqBody = GetWorkBody(cForm, 1)
     cHttp.SendReq(conn, "POST")
     ResData = cHttp.RecvRes(conn)
+
+    #确认加班
+    cHttp.ReqUrl = "/general/workflow/list/data/getdata.php?pageType=todo"
+    #获取当前时间的毫秒时间戳
+    CurMillTime = int(time.time()*1000)
+    cHttp.ReqBody = "_search=false&nd=%s&rows=10&page=1&sidx=run_id&sord=desc" % CurMillTime
+    cHttp.SendReq(conn, "POST")
+    ResData = cHttp.RecvRes(conn)
+
+    #打印日志
+    print("一键加班脚本执行完成，请登录网页查看具体信息")
+    print("加班信息：")
+    print("加班时间：%s") % cForm.data_91
+    print("姓名：%s, 部门：%s, 加班餐：%s, 班车：%s, 加班理由：%s") % (cForm.data_68, cForm.data_70, cForm.data_89, cForm.data_90, cForm.data_73)

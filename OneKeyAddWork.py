@@ -454,12 +454,12 @@ if __name__ == "__main__":
     cForm.run_name_old = cForm.run_name
     #NAME; GROUP; DATE
     RegexResult = re.search(r'（(.*?)）(.*?)-(.*)', cForm.run_name, re.I)
-    cForm.data_91 = RegexResult.group(1)
     cForm.data_70 = RegexResult.group(2)
     cForm.data_68 = RegexResult.group(3)
 
     #填写加班基本参数
     #TIME
+    cForm.data_91 = time.strftime("%Y-%m-%d", time.localtime())
     cForm.data_67 = time.strftime(TIME_FORMAT, time.localtime())
     #have_dinner
     cForm.data_89 = "是"

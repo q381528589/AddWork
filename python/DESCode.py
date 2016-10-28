@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from DESStruct import *
-from ConfigFileIO import *
 
-__all__ = ['desencode']
-
-class DES():
+class CDesCode:
     def __init__(self):
         pass
 
@@ -244,7 +241,6 @@ class DES():
         #转换为16进制
         from_code = self.__tohex(from_code)
         key = self.__tohex(key)
-        des = DES()
         key_len = len(key)
         string_len = len(from_code)
         if string_len<1 or key_len<1:
@@ -256,7 +252,6 @@ class DES():
     #DES解密
     def DESDecode(self, from_code, key):
         key = self.__tohex(key)
-        des = DES()
         key_len = len(key)
         string_len = len(from_code)
         if string_len%16 != 0:
@@ -265,14 +260,3 @@ class DES():
             return False
         key_code= self.__Decode(from_code, key, key_len, string_len)
         return self.__tounicode(key_code)
-
-#测试
-if __name__ == '__main__':
-    des = DES()
-    print des.DESEncode('钱嘉欢-sh88861158-1-0-加班', '1024')
-    print des.DESDecode('8f5ffb276d7f18241be565f22c48c83d2c4040432f3d9668e9834ee137b67156', '1024')
-    # cFile = CFileMng(r'./AddWork.cfg')
-    # if False == cFile.WriteTextFile("123456"):
-    #     print("failed to write file")
-    # else:
-    #     print("success")

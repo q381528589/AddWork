@@ -4,8 +4,11 @@ import sys
 import httplib, urllib
 import StringIO, gzip
 import re
-#from DESCode import *
-#from ConfigFileIO import *
+import random, string
+import base64
+import time
+from DESCode import *
+from ConfigFileIO import *
 
 #Cookie类
 class CCookie:
@@ -95,7 +98,14 @@ class CHttp:
     #函数返回：无
     #函数参数：无
     def __init__(self):
-        pass
+        self.__ReqHead = {"Host":"do.sanhuid.com"
+            , "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+            , "Origin":"http://do.sanhuid.com"
+            , "Upgrade-Insecure-Requests":"1"
+            , "User-Agent":"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 UBrowser/5.7.15319.202 Safari/537.36"
+            , "Content-Type":"application/x-www-form-urlencoded"
+            , "Accept-Encoding":"gzip, deflate"
+            , "Accept-Language":"zh-CN,zh;q=0.8"}
 
     #函数名称：CHttp::SetReqHead
     #函数功能：添加/修改请求头部数据
@@ -157,9 +167,9 @@ class CHttp:
 
     #函数名称：CHttp::Receive
     #函数功能：接收HTTP响应
-    #函数返回：AckCode   ：响应码
-    #函数返回：AckHead   ：响应头部
-    #函数返回：AckBody   ：响应体
+    #函数返回：AckCode   ：响应码，错误返回0
+    #函数返回：AckHead   ：响应头部，错误返回None
+    #函数返回：AckBody   ：响应体，错误返回None
     #函数参数：无
     def Receive(self):
         try:
@@ -170,7 +180,7 @@ class CHttp:
         self.__AckCode = self.__Response.status
         self.__AckHead = self.__Response.getheaders()
         self.__cCookie.SetCookie(self.__Response.getheader("set-cookie"))
-        self.__ReqBody = self.__Response.read()
+        self.__AckBody = self.__Response.read()
         return self.__AckCode, self.__AckHead, self.__AckBody
 
 #解压类
@@ -211,7 +221,7 @@ class CForm:
     #部门
     data_70 = ""
     #加班理由
-    data_73 = "加班"
+    data_73 = ""
     #加班餐
     data_89 = "是"
     #班车
@@ -252,7 +262,145 @@ class CRegex:
 
         return RegexResult.group(Position)
 
-if __name__ == "__main__":
+#MIME类
+class CMIME:
+    boundary = "----WebKitFormBoundary"
+    __CharList = []
+    __Buffer = ""
+
+    #函数名称：CMIME::__init__
+    #函数功能：构造函数
+    #函数返回：无
+    #函数参数：无
+    def __init__(self):
+        self.__CharList += random.sample('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', 16)
+        self.boundary += string.join(self.__CharList).replace(' ', "")
+
+    #函数名称：CMIME::AssembleMimeData
+    #函数功能：组装MIME数据
+    #函数返回：组装好的字符串
+    #函数参数：bAgain    ：是否为第二次发送
+    #函数参数：cForm     ：表单数据
+    def AssembleMimeData(self, bAgain, cForm):
+        if False == bAgain:
+            self.__AddMimeData("PRCS_TO", False, None, False)
+        else:
+            self.__AddMimeData("PRCS_TO", False, "0,", False)
+        self.__AddMimeData("webtype", False, "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 UBrowser/5.7.15319.202 Safari/537.36", False)
+        self.__AddMimeData("PRCS_CHOOSE", False, None, False)
+        self.__AddMimeData("RUN_PRCS_NAME", False, None, False)
+        if False == bAgain:
+            self.__AddMimeData("next_prcs_num", False, None, False)
+        else:
+            self.__AddMimeData("next_prcs_num", False, "0", False)
+
+        if False == bAgain:
+            self.__AddMimeData("info_str", False, None, False)
+        else:
+            self.__AddMimeData("info_str", False, "0,0,0,1,0,0,0,0,0,", False)
+        self.__AddMimeData("Symbol", False, "0", False)
+        self.__AddMimeData("run_name_old", False, cForm.run_name_old, False)
+        self.__AddMimeData("target", False, "parent", False)
+        self.__AddMimeData("callback", False, "turnCallback", False)
+        if False == bAgain:
+            self.__AddMimeData("SAVE_FLAG", False, "t", False)
+        else:
+            self.__AddMimeData("SAVE_FLAG", False, "tok", False)
+        self.__AddMimeData("FLOW_TYPE", False, "1", False)
+        self.__AddMimeData("EDIT_MODE", False, None, False)
+        self.__AddMimeData("RUN_ID", False, "%s" % cForm.run_id, False)
+        self.__AddMimeData("RUN_NAME", False, "%s" % cForm.run_name, False)
+        self.__AddMimeData("FLOW_ID", False, "%s" % cForm.flow_id, False)
+        self.__AddMimeData("PRCS_ID", False, "%s" % cForm.prcs_id, False)
+        self.__AddMimeData("FLOW_PRCS", False, "%s" % cForm.flow_prcs, False)
+        self.__AddMimeData("ITEM_ID_MAX", False, None, False)
+        self.__AddMimeData("MENU_FLAG", False, None, False)
+        self.__AddMimeData("HIDDEN_STR", False, None, False)
+        self.__AddMimeData("READ_ONLY_STR", False, None, False)
+        self.__AddMimeData("TOP_FLAG_OLD", False, "0", False)
+        self.__AddMimeData("BACK_CONTENT", False, None, False)
+        self.__AddMimeData("FLOW_PRCS_LAST", False, None, False)
+        self.__AddMimeData("PRCS_KEY_ID", False, "%s" % cForm.prcs_key_id, False)
+        self.__AddMimeData("work_level", False, "0", False)
+        self.__AddMimeData("work_level_old", False, "0", False)
+        self.__AddMimeData("getdata_search", False, None, False)
+        self.__AddMimeData("sign_object", False, "0", False)
+        self.__AddMimeData("onekey_next_flag", False, "0", False)
+        self.__AddMimeData("DATA_67", False, "%s" % cForm.data_67, False)
+        self.__AddMimeData("DATA_68", False, "%s" % cForm.data_68, False)
+        self.__AddMimeData("DATA_70", False, "%s" % cForm.data_70, False)
+        self.__AddMimeData("DATA_91", False, "%s" % cForm.data_91, False)
+        self.__AddMimeData("DATA_89", False, "%s" % cForm.data_89, False)
+        self.__AddMimeData("DATA_90", False, "%s" % cForm.data_90, False)
+        self.__AddMimeData("DATA_73", False, "%s" % cForm.data_73, False)
+        self.__AddMimeData("FLOW_AUTO_NUM", False, "0", False)
+        self.__AddMimeData("ATTACHMENT_0", True, None, False)
+        self.__AddMimeData("ATTACH_NAME", False, None, False)
+        self.__AddMimeData("ATTACH_DIR", False, None, False)
+        self.__AddMimeData("DISK_ID", False, None, False)
+        self.__AddMimeData("ATTACH_PRIV", False, "1", False)
+        self.__AddMimeData("ATTACHMENT_ID_OLD", False, None, False)
+        self.__AddMimeData("ATTACHMENT_NAME_OLD", False, None, False)
+        self.__AddMimeData("NEW_TYPE", False, "doc", False)
+        self.__AddMimeData("NEW_NAME", False, None, False)
+        self.__AddMimeData("TD_HTML_EDITOR_CONTENT", False, None, False)
+        self.__AddMimeData("ATTACHMENT1_0", True, None, False)
+        self.__AddMimeData("ATTACH_NAME1", False, None, False)
+        self.__AddMimeData("ATTACH_DIR1", False, None, False)
+        self.__AddMimeData("DISK_ID1", False, None, False)
+        self.__AddMimeData("SIGN_DATA", False, None, False)
+        if True == bAgain:
+            self.__AddMimeData("SMS_CONTENT", False, "工作已结束，流水号：%s，工作名称/文号：%s" % (cForm.run_id, cForm.run_name), False)
+            self.__AddMimeData("remind_others_id", False, None, False)
+        #数据结束
+        self.__AddMimeData(None, False, None, True)
+        #转码成GBK发送
+        return self.__Buffer.decode("utf8").encode("GBK")
+
+    #函数名称：CMIME::__AddMimeData
+    #函数功能：组装单个MIME数据
+    #函数返回：无
+    #函数参数：name      ：Content描述
+    #函数参数：bAttach   ：该字段是否有附件组成部分
+    #函数参数：Value     ：Content内容
+    #函数参数：bEnd      ：MIME是否全部结束
+    def __AddMimeData(self, name, bAttach, Value, bEnd):
+        #组装结束，加装MIME尾部数据
+        if bEnd:
+            self.__Buffer += "--%s--\r\n\r\n" % self.boundary
+            return
+
+        #参数检测
+        if None == name:
+            return
+
+        #MIME头部
+        self.__Buffer += "--%s\r\n" % self.boundary
+        #Content描述部分
+        self.__Buffer += "Content-Disposition: form-data; name=\"%s\"" % name
+        if bAttach:
+            self.__Buffer += "; filename=\"\"\r\n"
+            self.__Buffer += "Content-Type: application/octet-stream\r\n"
+        else:
+            self.__Buffer += "\r\n"
+        #MIME内容部分
+        self.__Buffer += "\r\n"
+        if None != Value:
+            self.__Buffer += "%s\r\n" % Value
+        else:
+            self.__Buffer += "\r\n"
+        #MIME结尾标志
+        self.__Buffer += "--%s\r\n" % self.boundary
+
+#函数名称：AddWork
+#函数功能：执行一键加班
+#函数返回：0成功 1参数错误 2网络错误 3认证错误 4表单已存在 5提交表单错误 6其它错误
+#函数参数：UserName      ：用户名
+#函数参数：Password      ：密码
+#函数参数：Dinner        ：加班餐（True或False）
+#函数参数：Bus           ：加班班车（True或False）
+#函数参数：Reason        ：加班理由
+def AddWork(UserName, Password, Dinner, Bus, Reason):
     #HTTP数据收发
     cHttp = CHttp()
     #Gzip数据解压
@@ -261,59 +409,191 @@ if __name__ == "__main__":
     cForm = CForm()
     #正则表达式类
     cRegex = CRegex()
+    #MIME类
+    cMine = CMIME()
     #登录成功定义
     SuccessStr = "正在进入OA系统，请稍候..."
+    #时间格式定义
+    TIME_FORMAT = "%X"
+
+    #检测数据有效性
+    if None==UserName or None==Password or None==Reason:
+        return 1
+    #数据编码转换
+    UserName = UserName.decode("utf8").encode("GBK")
+    Password = base64.b64encode(Password)
 
     #Step1：连接
     cHttp.Connect("120.27.241.239")
 
     #Step2：登录
-    cHttp.SetReqHead("Host", "do.sanhuid.com")
-    cHttp.SetReqHead("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
-    cHttp.SetReqHead("Origin", "http://do.sanhuid.com")
-    cHttp.SetReqHead("Upgrade-Insecure-Requests", "1")
-    cHttp.SetReqHead("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 UBrowser/5.7.15319.202 Safari/537.36")
-    cHttp.SetReqHead("Content-Type", "application/x-www-form-urlencoded")
-    cHttp.SetReqHead("Accept-Encoding", "gzip, deflate")
-    cHttp.SetReqHead("Accept-Language", "zh-CN,zh;q=0.8")
-    ReqBody = urllib.urlencode({'UNAME': 'username', 'PASSWORD': 'password', 'encode_type': 1})
+    ReqBody = urllib.urlencode({'UNAME': UserName, 'PASSWORD': Password, 'encode_type': 1})
     if False == cHttp.Send("POST", "/logincheck.php", ReqBody):
-        sys.exit()
+        return 2
     AckCode, AckHead, AckBody = cHttp.Receive()
+    if 200 != AckCode:
+        return 2
     #解压数据
     Data = cUnZip.Decompress(AckBody).decode("GBK").encode("utf8")
     #验证登录结果
     Result = Data.find(SuccessStr)
     if -1 == Result:
         print ("用户名或密码错误")
-        sys.exit()
+        return 3
 
     #Step3：提取表单
     cHttp.DelReqHead("Origin")
     cHttp.DelReqHead("Content-Type")
-    if False == cHttp.Send("GET", "/general/workflow/new/edit.php?FLOW_ID=%s&AUTO_NEW=1"):
-        sys.exit()
+    if False == cHttp.Send("GET", "/general/workflow/new/edit.php?FLOW_ID=%s&AUTO_NEW=1" % cForm.flow_id):
+        return 2
     AckCode, AckHead, AckBody = cHttp.Receive()
     #验证表单数据
     if 200 == AckCode:
         print ("该表单已存在，开通会员服务即可自动提交未填写完表单")
         print ("由于程序猿太懒，该功能暂未实现，根据打赏金额可考虑实现该功能")
-        sys.exit()
-    elif 302!=AckCode:
+        return 4
+    elif 302 != AckCode:
         print ("接收到响应错误，HTTP返回码为%d") % AckCode
-        sys.exit()
-    ResData = AckBody.decode("GBK").encode("utf8")
-    #RUN_ID
-    if None == cRegex.Match(r'RUN_ID=(.*?)&', ResData, 1):
-        sys.exit()
-    #PRCS_ID
-    if None == cRegex.Match(r'PRCS_ID=(.*?)&', ResData, 1):
-        sys.exit()
-    #FLOW_PRCS
-    if None == cRegex.Match(r'FLOW_PRCS=(.*?)&', ResData, 1):
-        sys.exit()
-    #PRCS_KEY_ID
-    if None == cRegex.Match(r'PRCS_KEY_ID=(.*?)&', ResData, 1):
-        sys.exit()
+        return 2
+    ResData = ""
+    for HeadType in AckHead:
+        if HeadType[0] == "location":
+            ResData = HeadType[1]
+    #根据正则表达式填写表单
+    cForm.run_id = cRegex.Match(r'RUN_ID=(.*?)&', ResData, 1)
+    cForm.prcs_id = cRegex.Match(r'PRCS_ID=(.*?)&', ResData, 1)
+    cForm.flow_prcs = cRegex.Match(r'FLOW_PRCS=(.*?)&', ResData, 1)
+    cForm.prcs_key_id = cRegex.Match(r'PRCS_KEY_ID=(.*?)&', ResData, 1)
+    if None==cForm.run_id or None==cForm.prcs_id or None==cForm.flow_prcs or None==cForm.prcs_key_id:
+        return 1
 
     #Step4：继续获取表单
+    ReqUrl = "/general/workflow/list/input_form/?MENU_FLAG=&"
+    ReqUrl += "RUN_ID=%s&FLOW_ID=%s&PRCS_ID=%s&FLOW_PRCS=%s&AUTO_NEW=1&PRCS_KEY_ID=%s" % \
+                   (cForm.run_id, cForm.flow_id, cForm.prcs_id, cForm.flow_prcs, cForm.prcs_key_id)
+    if False == cHttp.Send("GET", ReqUrl):
+        return 2
+    AckCode, AckHead, AckBody = cHttp.Receive()
+    if 200 != AckCode:
+        return 2
+    Data = cUnZip.Decompress(AckBody).decode("GBK").encode("utf8")
+    #根据正则表达式填写表单
+    cForm.run_name = cRegex.Match(r'en_run_name.*?=[\s\S]*?run_name.*?= "(.*?)"', Data, 1)
+    if None == cForm.run_name:
+        return 1
+    cForm.run_name = urllib.unquote(cForm.run_name)
+    cForm.run_name_old = cForm.run_name
+    cForm.data_70 = cRegex.Match(r'（(.*?)）(.*?)-(.*)', Data, 2)
+    cForm.data_68 = cRegex.Match(r'（(.*?)）(.*?)-(.*)', Data, 3)
+    if None==cForm.data_70 or None==cForm.data_68:
+        return 1
+    #填写加班基本参数
+    #TIME
+    cForm.data_91 = time.strftime("%Y-%m-%d", time.localtime())
+    cForm.data_67 = time.strftime(TIME_FORMAT, time.localtime())
+    #加班餐
+    if (True == Dinner):
+        cForm.data_89 = "是"
+    else:
+        cForm.data_89 = "否"
+    #加班班车
+    if (True == Bus):
+        cForm.data_90 = "是"
+    else:
+        cForm.data_90 = "否"
+    #Reason
+    cForm.data_73 = Reason
+
+    #Step5：提交当前用户名
+    cHttp.ReqHeader.setdefault("Origin", "http://do.sanhuid.com")
+    if False == cHttp.Send("POST", "/general/workflow/list/input_form/run_name_submit.php", ""):
+        return 2
+    AckCode, AckHead, AckBody = cHttp.Receive()
+    if 200 != AckCode:
+        return 2
+
+    #Step6：加班申请，组装Body数据
+    cHttp.ReqHeader.setdefault("Cache-Control", "max-age=0")
+    cHttp.ReqHeader.setdefault("Upgrade-Insecure-Requests", "1")
+    cHttp.ReqHeader.setdefault("Content-Type", "multipart/form-data; boundary=%s" % cMine.boundary)
+    cHttp.Send("POST", "/general/workflow/list/input_form/input_submit.php", cMine.AssembleMimeData(False, cForm))
+    AckCode, AckHead, AckBody = cHttp.Receive()
+    if 200 != AckCode:
+        return 2
+    Data = cUnZip.Decompress(AckBody).decode("GBK").encode("utf8")
+    #转交成功标志
+    if None == Data.find("\u8f6c\u4ea4\u6210\u529f"):
+        print ("提交的表单信息错误")
+        return 5
+
+    #Step7：第二次提交表单
+    cHttp.Send("POST", "/general/workflow/list/input_form/input_submit.php", cMine.AssembleMimeData(True, cForm))
+    AckCode, AckHead, AckBody = cHttp.Receive()
+    if 200 != AckCode:
+        return 2
+
+    #Step8：确认加班
+    #获取当前时间的毫秒时间戳
+    CurMillTime = int(time.time()*1000)
+    ReqBody = "_search=false&nd=%s&rows=10&page=1&sidx=run_id&sord=desc" % CurMillTime
+    cHttp.Send("POST", "/general/workflow/list/data/getdata.php?pageType=todo", ReqBody)
+    AckCode, AckHead, AckBody = cHttp.Receive()
+    if 200 != AckCode:
+        return 2
+
+    #打印日志
+    print("一键加班脚本执行完成，请登录网页查看具体信息")
+    print("加班信息：")
+    print("加班时间：%s %s") % (cForm.data_91, cForm.data_67)
+    print("姓名：%s, 部门：%s, 加班餐：%s, 班车：%s, 加班理由：%s") % (cForm.data_68, cForm.data_70, cForm.data_89, cForm.data_90, cForm.data_73)
+    return 0
+
+if __name__ == "__main__":
+    #读取文件
+    cCfgFile = CFileMng("./AddWork.cfg")
+    FileText = cCfgFile.ReadTextFile()
+
+    #数据解密分割
+    des = CDesCode()
+    DecryptData = des.DESDecode(FileText, '1024')
+    Couple = DecryptData.split('-')
+    UserName = Couple[0]
+    Password = Couple[1]
+    if '1' == Couple[2]:
+        Dinner = True
+    elif '0' == Couple[2]:
+        Dinner = False
+    else:
+        print ("加班餐参数输入无效")
+        sys.exit()
+
+    if '1' == Couple[3]:
+        Bus = True
+    elif '0' == Couple[3]:
+        Bus = False
+    else:
+        print ("加班班车参数输入无效")
+        sys.exit()
+    Reason = Couple[4]
+
+    #打印文件并询问
+
+    #执行一键加班程序
+    if 0 != AddWork(UserName, Password, Dinner, Bus, Reason):
+        sys.exit()
+
+    #保存到文件
+    Data = UserName + '-' + Password + '-';
+    if Dinner:
+        Data += '1-'
+    else:
+        Data += '0-'
+
+    if Bus:
+        Data += '1-'
+    else:
+        Data += '0- '
+    Data += Reason
+
+    EncryptData = des.DESEncode(Data, '1024')
+    cCfgFile.WriteTextFile(EncryptData)

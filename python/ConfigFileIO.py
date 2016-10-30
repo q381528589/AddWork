@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import os
+
 #文件读写类
 class CFileMng:
     __m_szPath = ""
@@ -7,9 +9,9 @@ class CFileMng:
     #函数名称：CFileMng::__init__
     #函数功能：构造函数
     #函数返回：无
-    #函数参数：szPath    ：文件路径
-    def __init__(self, szPath):
-        self.__m_szPath = szPath
+    #函数参数：szFilePath：文件路径
+    def __init__(self, szFilePath):
+        self.__m_szPath = szFilePath
 
     #函数名称：CFileMng::ReadTextFile
     #函数功能：读取文本文件
@@ -50,3 +52,13 @@ class CFileMng:
 
         File_Object.close()
         return True;
+		
+	#函数名称：CFileMng::DelTextFile
+    #函数功能：删除文本文件
+    #函数返回：无
+    #函数参数：szFilePath：文件路径
+    def DelTextFile(self):
+		if False == os.path.exists(self.__m_szPath)：
+			return
+		os.remove(self.__m_szPath)
+		return

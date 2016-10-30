@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 
+############################################
+#三汇一键加班系统
+#后期需要改进事项：。
+#1.修改配置时需要密码
+#2.本地无法读取密码的连接远程验证
+############################################
+
 import sys
 import httplib, urllib
 import StringIO, gzip
@@ -182,6 +189,13 @@ class CHttp:
         self.__cCookie.SetCookie(self.__Response.getheader("set-cookie"))
         self.__AckBody = self.__Response.read()
         return self.__AckCode, self.__AckHead, self.__AckBody
+    
+	#函数名称：CHttp::Close
+    #函数功能：关闭Http连接
+    #函数返回：无
+    #函数参数：无
+    def Close(self):
+		self.__Connect.close()
 
 #解压类
 class CUnzip:
@@ -392,15 +406,26 @@ class CMIME:
         #MIME结尾标志
         self.__Buffer += "--%s\r\n" % self.boundary
 
+class CUserInfo:
+	UserName = None
+	Password = None
+	Dinner = 1
+	Bus = 0
+	Reason = None
+	bFileChange = False
+
+	#函数名称：CMIME::__init__
+    #函数功能：构造函数
+    #函数返回：无
+    #函数参数：无
+	def __init__(self, UserName):
+		self.UserName = UserName
+
 #函数名称：AddWork
 #函数功能：执行一键加班
 #函数返回：0成功 1参数错误 2网络错误 3认证错误 4表单已存在 5提交表单错误 6其它错误
-#函数参数：UserName      ：用户名
-#函数参数：Password      ：密码
-#函数参数：Dinner        ：加班餐（True或False）
-#函数参数：Bus           ：加班班车（True或False）
-#函数参数：Reason        ：加班理由
-def AddWork(UserName, Password, Dinner, Bus, Reason):
+#函数参数：cUserInfo     ：用户信息
+def AddWork(cUserInfo):
     #HTTP数据收发
     cHttp = CHttp()
     #Gzip数据解压
@@ -417,17 +442,17 @@ def AddWork(UserName, Password, Dinner, Bus, Reason):
     TIME_FORMAT = "%X"
 
     #检测数据有效性
-    if None==UserName or None==Password or None==Reason:
+    if None==cUserInfo.UserName or None==cUserInfo.Password or None==cUserInfo.Reason:
         return 1
     #数据编码转换
-    UserName = UserName.decode("utf8").encode("GBK")
-    Password = base64.b64encode(Password)
+    cUserInfo.UserName = cUserInfo.UserName.decode("utf8").encode("GBK")
+    cUserInfo.Password = base64.b64encode(Password)
 
     #Step1：连接
     cHttp.Connect("120.27.241.239")
 
     #Step2：登录
-    ReqBody = urllib.urlencode({'UNAME': UserName, 'PASSWORD': Password, 'encode_type': 1})
+    ReqBody = urllib.urlencode({'UNAME': cUserInfo.UserName, 'PASSWORD': cUserInfo.Password, 'encode_type': 1})
     if False == cHttp.Send("POST", "/logincheck.php", ReqBody):
         return 2
     AckCode, AckHead, AckBody = cHttp.Receive()
@@ -492,17 +517,17 @@ def AddWork(UserName, Password, Dinner, Bus, Reason):
     cForm.data_91 = time.strftime("%Y-%m-%d", time.localtime())
     cForm.data_67 = time.strftime(TIME_FORMAT, time.localtime())
     #加班餐
-    if (True == Dinner):
+    if (True == cUserInfo.Dinner):
         cForm.data_89 = "是"
     else:
         cForm.data_89 = "否"
     #加班班车
-    if (True == Bus):
+    if (True == cUserInfo.Bus):
         cForm.data_90 = "是"
     else:
         cForm.data_90 = "否"
     #Reason
-    cForm.data_73 = Reason
+    cForm.data_73 = cUserInfo.Reason
 
     #Step5：提交当前用户名
     cHttp.ReqHeader.setdefault("Origin", "http://do.sanhuid.com")
@@ -547,53 +572,187 @@ def AddWork(UserName, Password, Dinner, Bus, Reason):
     print("加班时间：%s %s") % (cForm.data_91, cForm.data_67)
     print("姓名：%s, 部门：%s, 加班餐：%s, 班车：%s, 加班理由：%s") % (cForm.data_68, cForm.data_70, cForm.data_89, cForm.data_90, cForm.data_73)
     return 0
+	
+	#Step9：关闭连接
+	cHttp.Close()
+
+#函数名称：ReadFile
+#函数功能：读取配置文件
+#函数返回：0成功 1打开文件失败 2解密失败 3参数错误
+#函数参数：无
+def ReadFile(cUserInfo):
+	cCfgFile = CFileMng("./AddWork.cfg")
+	FileText = cCfgFile.ReadTextFile()
+	if None == FileText:
+		print ("打开配置文件失败")
+		return 1
+	
+	#数据解密
+	des = CDesCode()
+	DecryptData = des.DESDecode(FileText, cUserInfo.UserName)
+	Couple = DecryptData.split('-')
+	if None==Couple[0] or None==Couple[1] or None==Couple[2] or None==Couple[3] or None==Couple[4]:
+		print ("数据解密失败")
+		return 2
+	cUserInfo.UserName = Couple[0]
+	cUserInfo.Password = Couple[1]
+	if '1' == Couple[2]:
+		cUserInfo.Dinner = True
+	elif '0' == Couple[2]:
+		cUserInfo.Dinner = False
+	else:
+		return 3
+		
+	if '1' == Couple[3]:
+		cUserInfo.Bus = True
+	elif '0' == Couple[3]:
+		cUserInfo.Bus = False
+	else:
+		return 3
+	cUserInfo.Reason = Couple[4]
+	
+	return 0
+
+#函数名称：ChangeConfig
+#函数功能：修改配置文件
+#函数返回：True成功，False失败
+#函数参数：cUserInfo		：用户信息
+#函数参数：bFirst			：是否第一次填写
+#函数参数：bChangePsw		：是否需要修改密码
+#函数参数：bChangeCfg		：是否需要修改配置
+def ChangeConfig(cUserInfo, bFirst, bChangePsw=False, bChangeCfg=False):
+	if True == bFirst:
+		#请输入密码
+		Password = input("请输入密码: ")
+		Password2 = input("请再次输入： ")
+		if (Password != Password2):
+			print ("输入的两次密码不同")
+			return False
+		#保存密码
+		cUserInfo.Password = Password
+		#添加参数
+		bChangeCfg = True
+		
+	if True == bChangePsw:
+		#请输入原密码
+		Password = input("请输入原密码: ")
+		if (Password != cUserInfo.Password):
+			print ("密码错误")
+			return False
+		#请输入新密码
+		Password = input("请输入新密码: ")
+		Password2 = input("请再次输入： ")
+		if (Password != Password2):
+			print ("输入的两次密码不同")
+			return False
+		#保存密码
+		cUserInfo.Password = Password
+	
+	if True == bChangeCfg:
+		#是否需要加班餐
+		Dinner = input("是否需要加班餐(1是2否): ")
+		if '1' == Dinner:
+			cUserInfo.Dinner = 1
+		elif '0' == Dinner:
+			cUserInfo.Dinner = 0
+		else:
+			print ("输入的参数不正确")
+			return False
+		#是否需要加班班车
+		Bus = input("是否需要加班班车(1是2否): ")
+		if '1' == Bus:
+			cUserInfo.Bus = 1
+		elif '0' == Bus:
+			cUserInfo.Bus = 0
+		else:
+			print ("输入的参数不正确")
+			return False
+		#加班理由
+		cUserInfo.Reason = input("加班理由: ")
+		
+		print ("修改配置成功")
+		bFileChange = True
+		return True
+	
+def SaveFile(cUserInfo):
+	if False == cUserInfo.bFileChange:
+		return
+	
+	if None==cUserInfo.UserName or None==cUserInfo.Password or None==None==cUserInfo.Reason:
+		return
+	
+    #保存到文件
+	Data = cUserInfo.UserName + "-" + cUserInfo.Password + '-'
+	if cUserInfo.Dinner:
+		Data += '1-'
+	else:
+		Data += '0-'
+
+	if cUserInfo.Bus:
+		Data += '1-'
+	else:
+		Data += '0- '
+	Data += cUserInfo.Reason
+
+	EncryptData = des.DESEncode(Data, cUserInfo.UserName)
+	cCfgFile.WriteTextFile(EncryptData)
+	#配置参数重新修改为False
+	cUserInfo.bFileChange = False
 
 if __name__ == "__main__":
-    #读取文件
-    cCfgFile = CFileMng("./AddWork.cfg")
-    FileText = cCfgFile.ReadTextFile()
+	UserName = "钱嘉欢"
+	cUserInfo = CUserInfo(UserName)
+	FuncResult = 0
+	
+	while True:
+		#打印文件并询问
+		print ("欢迎进入一键加班系统！")
+		print ("当前用户名: %s") % UserName
+		print ("请选择以下选项：")
+		print ("1.执行一键加班程序")
+		print ("2.修改登录密码(仅修改本地密码，不修改登录服务器所需的密码！)")
+		print ("3.修改加班参数")
+		print ("4.删除配置文件")
+		print ("5.退出程序")
+		
+		#输入参数
+		Input = input()
+		#根据选择执行相关程序
+		if '1' == Input:
+			#读取文件
+			FuncResult = ReadFile(cUserInfo)
+			if 0 == FuncResult:
+				#检测程序授权
+				if UserName != cUserInfo.UserName:
+					print ("该软件没有授权给当前用户，请联系软件开发者，谢谢！")
+					sys.exit()
+				#执行加班程序,不管成功与失败，均直接保存退出
+				AddWork(cUserInfo)
+				SaveFile()
+				break
+			elif 1==FuncResult or 2==FuncResult:
+				ChangeConfig(cUserInfo, True)
+				continue
+			elif 3==FuncResult:
+				ChangeConfig(cUserInfo, False, False, True)
+				continue
+				
+		elif '2' == Input:
+			ChangeConfig(cUserInfo, False, True, False)
+			SaveFile()
+			continue
+			
+		elif '3' == Input:
+			ChangeConfig(cUserInfo, False, False, True)
+			SaveFile()
+			continue
 
-    #数据解密分割
-    des = CDesCode()
-    DecryptData = des.DESDecode(FileText, '1024')
-    Couple = DecryptData.split('-')
-    UserName = Couple[0]
-    Password = Couple[1]
-    if '1' == Couple[2]:
-        Dinner = True
-    elif '0' == Couple[2]:
-        Dinner = False
-    else:
-        print ("加班餐参数输入无效")
-        sys.exit()
-
-    if '1' == Couple[3]:
-        Bus = True
-    elif '0' == Couple[3]:
-        Bus = False
-    else:
-        print ("加班班车参数输入无效")
-        sys.exit()
-    Reason = Couple[4]
-
-    #打印文件并询问
-
-    #执行一键加班程序
-    if 0 != AddWork(UserName, Password, Dinner, Bus, Reason):
-        sys.exit()
-
-    #保存到文件
-    Data = UserName + '-' + Password + '-';
-    if Dinner:
-        Data += '1-'
-    else:
-        Data += '0-'
-
-    if Bus:
-        Data += '1-'
-    else:
-        Data += '0- '
-    Data += Reason
-
-    EncryptData = des.DESEncode(Data, '1024')
-    cCfgFile.WriteTextFile(EncryptData)
+		elif '4' == Input:
+			cCfgFile = CFileMng("./AddWork.cfg")
+			cCfgFile.DelTextFile()
+			print ("删除配置文件成功")
+			continue
+			
+		elif '5' == Input:
+			Result = input("输入任意内容后回车退出...")
+			break

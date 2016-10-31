@@ -190,12 +190,12 @@ class CHttp:
         self.__AckBody = self.__Response.read()
         return self.__AckCode, self.__AckHead, self.__AckBody
     
-	#函数名称：CHttp::Close
+    #函数名称：CHttp::Close
     #函数功能：关闭Http连接
     #函数返回：无
     #函数参数：无
     def Close(self):
-		self.__Connect.close()
+        self.__Connect.close()
 
 #解压类
 class CUnzip:
@@ -407,19 +407,19 @@ class CMIME:
         self.__Buffer += "--%s\r\n" % self.boundary
 
 class CUserInfo:
-	UserName = None
-	Password = None
-	Dinner = 1
-	Bus = 0
-	Reason = None
-	bFileChange = False
+    UserName = None
+    Password = None
+    Dinner = 1
+    Bus = 0
+    Reason = ""
+    bFileChange = False
 
-	#函数名称：CMIME::__init__
+    #函数名称：CMIME::__init__
     #函数功能：构造函数
     #函数返回：无
     #函数参数：无
-	def __init__(self, UserName):
-		self.UserName = UserName
+    def __init__(self, UserName):
+        self.UserName = UserName
 
 #函数名称：AddWork
 #函数功能：执行一键加班
@@ -442,11 +442,11 @@ def AddWork(cUserInfo):
     TIME_FORMAT = "%X"
 
     #检测数据有效性
-    if None==cUserInfo.UserName or None==cUserInfo.Password or None==cUserInfo.Reason:
+    if None==cUserInfo.UserName or None==cUserInfo.Password or 0==len(cUserInfo.Reason):
         return 1
     #数据编码转换
     cUserInfo.UserName = cUserInfo.UserName.decode("utf8").encode("GBK")
-    cUserInfo.Password = base64.b64encode(Password)
+    cUserInfo.Password = base64.b64encode(cUserInfo.Password)
 
     #Step1：连接
     cHttp.Connect("120.27.241.239")
@@ -572,46 +572,53 @@ def AddWork(cUserInfo):
     print("加班时间：%s %s") % (cForm.data_91, cForm.data_67)
     print("姓名：%s, 部门：%s, 加班餐：%s, 班车：%s, 加班理由：%s") % (cForm.data_68, cForm.data_70, cForm.data_89, cForm.data_90, cForm.data_73)
     return 0
-	
-	#Step9：关闭连接
-	cHttp.Close()
+
+    #Step9：关闭连接
+    cHttp.Close()
 
 #函数名称：ReadFile
 #函数功能：读取配置文件
 #函数返回：0成功 1打开文件失败 2解密失败 3参数错误
-#函数参数：无
-def ReadFile(cUserInfo):
-	cCfgFile = CFileMng("./AddWork.cfg")
-	FileText = cCfgFile.ReadTextFile()
-	if None == FileText:
-		print ("打开配置文件失败")
-		return 1
-	
-	#数据解密
-	des = CDesCode()
-	DecryptData = des.DESDecode(FileText, cUserInfo.UserName)
-	Couple = DecryptData.split('-')
-	if None==Couple[0] or None==Couple[1] or None==Couple[2] or None==Couple[3] or None==Couple[4]:
-		print ("数据解密失败")
-		return 2
-	cUserInfo.UserName = Couple[0]
-	cUserInfo.Password = Couple[1]
-	if '1' == Couple[2]:
-		cUserInfo.Dinner = True
-	elif '0' == Couple[2]:
-		cUserInfo.Dinner = False
-	else:
-		return 3
-		
-	if '1' == Couple[3]:
-		cUserInfo.Bus = True
-	elif '0' == Couple[3]:
-		cUserInfo.Bus = False
-	else:
-		return 3
-	cUserInfo.Reason = Couple[4]
-	
-	return 0
+#函数参数：cUserInfo     ：用户信息
+#函数参数：cCfgFile      ：配置文件信息
+#函数参数：des           ：加解密类
+def ReadFile(cUserInfo, cCfgFile,  des):
+    FileText = cCfgFile.ReadTextFile()
+    if None == FileText:
+        print ("打开配置文件失败")
+        return 1
+
+    #数据解密
+    DecryptData = des.DESDecode(FileText, cUserInfo.UserName)
+    #去除尾部'\0'
+    DataLen = len(DecryptData)
+    for i in range(DataLen, 0, -1):
+        if '\0' != DecryptData[DataLen-1]:
+            break
+        DataLen = DataLen - 1
+        DecryptData = DecryptData[:DataLen]
+    Couple = DecryptData.split('-')
+    if 5 > len(Couple):
+        print ("数据解密失败")
+        return 2
+    cUserInfo.UserName = Couple[0]
+    cUserInfo.Password = Couple[1]
+    if '1' == Couple[2]:
+        cUserInfo.Dinner = True
+    elif '0' == Couple[2]:
+        cUserInfo.Dinner = False
+    else:
+        return 3
+
+    if '1' == Couple[3]:
+        cUserInfo.Bus = True
+    elif '0' == Couple[3]:
+        cUserInfo.Bus = False
+    else:
+        return 3
+    cUserInfo.Reason = Couple[4]
+
+    return 0
 
 #函数名称：ChangeConfig
 #函数功能：修改配置文件
@@ -621,138 +628,161 @@ def ReadFile(cUserInfo):
 #函数参数：bChangePsw		：是否需要修改密码
 #函数参数：bChangeCfg		：是否需要修改配置
 def ChangeConfig(cUserInfo, bFirst, bChangePsw=False, bChangeCfg=False):
-	if True == bFirst:
-		#请输入密码
-		Password = input("请输入密码: ")
-		Password2 = input("请再次输入： ")
-		if (Password != Password2):
-			print ("输入的两次密码不同")
-			return False
-		#保存密码
-		cUserInfo.Password = Password
-		#添加参数
-		bChangeCfg = True
-		
-	if True == bChangePsw:
-		#请输入原密码
-		Password = input("请输入原密码: ")
-		if (Password != cUserInfo.Password):
-			print ("密码错误")
-			return False
-		#请输入新密码
-		Password = input("请输入新密码: ")
-		Password2 = input("请再次输入： ")
-		if (Password != Password2):
-			print ("输入的两次密码不同")
-			return False
-		#保存密码
-		cUserInfo.Password = Password
-	
-	if True == bChangeCfg:
-		#是否需要加班餐
-		Dinner = input("是否需要加班餐(1是2否): ")
-		if '1' == Dinner:
-			cUserInfo.Dinner = 1
-		elif '0' == Dinner:
-			cUserInfo.Dinner = 0
-		else:
-			print ("输入的参数不正确")
-			return False
-		#是否需要加班班车
-		Bus = input("是否需要加班班车(1是2否): ")
-		if '1' == Bus:
-			cUserInfo.Bus = 1
-		elif '0' == Bus:
-			cUserInfo.Bus = 0
-		else:
-			print ("输入的参数不正确")
-			return False
-		#加班理由
-		cUserInfo.Reason = input("加班理由: ")
-		
-		print ("修改配置成功")
-		bFileChange = True
-		return True
-	
-def SaveFile(cUserInfo):
-	if False == cUserInfo.bFileChange:
-		return
-	
-	if None==cUserInfo.UserName or None==cUserInfo.Password or None==None==cUserInfo.Reason:
-		return
-	
+    if True == bFirst:
+        #检测程序授权
+        UserName = raw_input("请输入用户名: ")
+        if UserName != cUserInfo.UserName:
+            print ("用户名验证失败")
+            return False
+        #请输入密码
+        Password = raw_input("请输入密码: ")
+        Password2 = raw_input("请再次输入： ")
+        if (Password != Password2):
+            print ("输入的两次密码不同")
+            return False
+        #保存密码
+        cUserInfo.Password = Password
+        #添加参数
+        bChangeCfg = True
+
+    if True == bChangePsw:
+        #请输入原密码
+        Password = raw_input("请输入原密码: ")
+        if (Password != cUserInfo.Password):
+            print ("密码错误")
+            return False
+        #请输入新密码
+        Password = raw_input("请输入新密码: ")
+        Password2 = raw_input("请再次输入： ")
+        if (Password != Password2):
+            print ("输入的两次密码不同")
+            return False
+        #保存密码
+        cUserInfo.Password = Password
+
+    if True == bChangeCfg:
+        #是否需要加班餐
+        Dinner = raw_input("是否需要加班餐(1是2否): ")
+        if '1' == Dinner:
+            cUserInfo.Dinner = 1
+        elif '2' == Dinner:
+            cUserInfo.Dinner = 0
+        else:
+            print ("输入的参数不正确")
+            return False
+        #是否需要加班班车
+        Bus = raw_input("是否需要加班班车(1是2否): ")
+        if '1' == Bus:
+            cUserInfo.Bus = 1
+        elif '2' == Bus:
+            cUserInfo.Bus = 0
+        else:
+            print ("输入的参数不正确")
+            return False
+        #加班理由
+        cUserInfo.Reason = raw_input("加班理由: ")
+
+    print ("修改配置成功")
+    cUserInfo.bFileChange = True
+    return True
+
+#函数名称：SaveFile
+#函数功能：保存配置文件
+#函数返回：无
+#函数参数：cUserInfo     ：用户信息
+#函数参数：cCfgFile      ：配置文件信息
+#函数参数：des           ：加解密类
+def SaveFile(cUserInfo, cCfgFile, des):
+    if False == cUserInfo.bFileChange:
+        return
+
+    if None==cUserInfo.UserName or None==cUserInfo.Password or 0==len(cUserInfo.Reason):
+        return
+
     #保存到文件
-	Data = cUserInfo.UserName + "-" + cUserInfo.Password + '-'
-	if cUserInfo.Dinner:
-		Data += '1-'
-	else:
-		Data += '0-'
+    Data = cUserInfo.UserName + '-' + cUserInfo.Password + '-'
+    if cUserInfo.Dinner:
+        Data += '1-'
+    else:
+        Data += '0-'
 
-	if cUserInfo.Bus:
-		Data += '1-'
-	else:
-		Data += '0- '
-	Data += cUserInfo.Reason
+    if cUserInfo.Bus:
+        Data += '1-'
+    else:
+        Data += '0-'
+    Data += cUserInfo.Reason
 
-	EncryptData = des.DESEncode(Data, cUserInfo.UserName)
-	cCfgFile.WriteTextFile(EncryptData)
-	#配置参数重新修改为False
-	cUserInfo.bFileChange = False
+    EncryptData = des.DESEncode(Data, cUserInfo.UserName)
+    cCfgFile.WriteTextFile(EncryptData)
+    #配置参数重新修改为False
+    cUserInfo.bFileChange = False
 
 if __name__ == "__main__":
-	UserName = "钱嘉欢"
-	cUserInfo = CUserInfo(UserName)
-	FuncResult = 0
-	
-	while True:
-		#打印文件并询问
-		print ("欢迎进入一键加班系统！")
-		print ("当前用户名: %s") % UserName
-		print ("请选择以下选项：")
-		print ("1.执行一键加班程序")
-		print ("2.修改登录密码(仅修改本地密码，不修改登录服务器所需的密码！)")
-		print ("3.修改加班参数")
-		print ("4.删除配置文件")
-		print ("5.退出程序")
-		
-		#输入参数
-		Input = input()
-		#根据选择执行相关程序
-		if '1' == Input:
-			#读取文件
-			FuncResult = ReadFile(cUserInfo)
-			if 0 == FuncResult:
-				#检测程序授权
-				if UserName != cUserInfo.UserName:
-					print ("该软件没有授权给当前用户，请联系软件开发者，谢谢！")
-					sys.exit()
-				#执行加班程序,不管成功与失败，均直接保存退出
-				AddWork(cUserInfo)
-				SaveFile()
-				break
-			elif 1==FuncResult or 2==FuncResult:
-				ChangeConfig(cUserInfo, True)
-				continue
-			elif 3==FuncResult:
-				ChangeConfig(cUserInfo, False, False, True)
-				continue
-				
-		elif '2' == Input:
-			ChangeConfig(cUserInfo, False, True, False)
-			SaveFile()
-			continue
-			
-		elif '3' == Input:
-			ChangeConfig(cUserInfo, False, False, True)
-			SaveFile()
-			continue
+    UserName = "钱嘉欢"
+    FuncResult = 0
+    cUserInfo = CUserInfo(UserName)
+    cCfgFile = CFileMng("./AddWork.cfg")
+    des = CDesCode()
 
-		elif '4' == Input:
-			cCfgFile = CFileMng("./AddWork.cfg")
-			cCfgFile.DelTextFile()
-			print ("删除配置文件成功")
-			continue
-			
-		elif '5' == Input:
-			Result = input("输入任意内容后回车退出...")
-			break
+    while True:
+        #读取文件
+        FuncResult = ReadFile(cUserInfo, cCfgFile, des)
+        if 0 != FuncResult:
+            ChangeConfig(cUserInfo, True)
+            SaveFile(cUserInfo, cCfgFile, des)
+
+        #打印文件并询问
+        print("*********************************************************")
+        print ("欢迎进入一键加班系统！")
+        print ("当前用户名: %s\n") % UserName
+        print ("请选择以下选项：")
+        print ("1.执行一键加班程序")
+        print ("2.修改登录密码(仅修改本地密码，不修改登录服务器所需的密码！)")
+        print ("3.修改加班参数")
+        print ("4.删除配置文件")
+        print ("5.退出程序")
+        print("*********************************************************")
+
+        #输入参数
+        Input = input()
+        #根据选择执行相关程序
+        if 1 == Input:
+            #验证密码
+            Password = raw_input("请输入本地保存的密码: ")
+            if (Password != cUserInfo.Password):
+                print ("密码错误")
+                continue
+            #执行加班程序,不管成功与失败，均直接保存退出
+            AddWork(cUserInfo)
+            SaveFile(cUserInfo, cCfgFile, des)
+            break
+
+        elif 2 == Input:
+            ChangeConfig(cUserInfo, False, True, False)
+            SaveFile(cUserInfo, cCfgFile, des)
+            continue
+
+        elif 3 == Input:
+            #验证密码
+            Password = raw_input("请输入本地保存的密码: ")
+            if (Password != cUserInfo.Password):
+                print ("密码错误")
+                continue
+            ChangeConfig(cUserInfo, False, False, True)
+            SaveFile(cUserInfo, cCfgFile, des)
+            continue
+
+        elif 4 == Input:
+            #验证密码
+            Password = raw_input("请输入本地保存的密码: ")
+            if (Password != cUserInfo.Password):
+                print ("密码错误")
+                continue
+            cCfgFile.DelTextFile()
+            print ("删除配置文件成功")
+            continue
+
+        elif 5 == Input:
+            print ("按任意键退出...")
+            Result = raw_input()
+            break

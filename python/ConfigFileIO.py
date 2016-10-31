@@ -52,13 +52,13 @@ class CFileMng:
 
         File_Object.close()
         return True;
-		
-	#函数名称：CFileMng::DelTextFile
+
+    #函数名称：CFileMng::DelTextFile
     #函数功能：删除文本文件
     #函数返回：无
     #函数参数：szFilePath：文件路径
     def DelTextFile(self):
-		if False == os.path.exists(self.__m_szPath)：
-			return
-		os.remove(self.__m_szPath)
-		return
+        if False == os.path.exists(self.__m_szPath):
+            return
+        os.remove(self.__m_szPath)
+        return

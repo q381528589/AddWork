@@ -7,7 +7,6 @@
 #2.本地无法读取密码的连接远程验证
 ############################################
 
-import sys
 import httplib, urllib
 import StringIO, gzip
 import re
@@ -718,31 +717,38 @@ def SaveFile(cUserInfo, cCfgFile, des):
     cUserInfo.bFileChange = False
 
 if __name__ == "__main__":
+    #用户名定义
     UserName = "钱嘉欢"
+    #函数返回结果
     FuncResult = 0
+    #用户加班信息
     cUserInfo = CUserInfo(UserName)
+    #配置文件
     cCfgFile = CFileMng("./AddWork.cfg")
+    #加解密工具
     des = CDesCode()
+    #数据缓存
+    szTemp = ""
 
     while True:
         #读取文件
         FuncResult = ReadFile(cUserInfo, cCfgFile, des)
-        if 0 != FuncResult:
+        if 0!=FuncResult or UserName!=cUserInfo.UserName:
             ChangeConfig(cUserInfo, True)
             SaveFile(cUserInfo, cCfgFile, des)
 
         #打印文件并询问
-        print("*********************************************************")
+        print("\n*********************************************************")
         print ("欢迎进入一键加班系统！")
         print ("当前用户名: %s\n") % UserName
         print ("请选择以下选项：")
         print ("1.执行一键加班程序")
         print ("2.修改登录密码(仅修改本地密码，不修改登录服务器所需的密码！)")
-        print ("3.修改加班参数")
-        print ("4.删除配置文件")
-        print ("5.退出程序")
+        print ("3.查看用户信息")
+        print ("4.修改加班参数")
+        print ("5.删除配置文件")
+        print ("6.退出程序")
         print("*********************************************************")
-
         #输入参数
         Input = input()
         #根据选择执行相关程序
@@ -763,6 +769,15 @@ if __name__ == "__main__":
             continue
 
         elif 3 == Input:
+            szTemp = "用户名: %s, " % cUserInfo.UserName
+            szTemp += "加班餐: "
+            szTemp += "是, " if 1==cUserInfo.Dinner else "否, "
+            szTemp += "加班班车:"
+            szTemp += "是, " if 1==cUserInfo.Bus else "否, "
+            szTemp += "加班理由: %s" % cUserInfo.Reason
+            print (szTemp)
+            continue
+        elif 4 == Input:
             #验证密码
             Password = raw_input("请输入本地保存的密码: ")
             if (Password != cUserInfo.Password):
@@ -772,7 +787,7 @@ if __name__ == "__main__":
             SaveFile(cUserInfo, cCfgFile, des)
             continue
 
-        elif 4 == Input:
+        elif 5 == Input:
             #验证密码
             Password = raw_input("请输入本地保存的密码: ")
             if (Password != cUserInfo.Password):
@@ -782,7 +797,7 @@ if __name__ == "__main__":
             print ("删除配置文件成功")
             continue
 
-        elif 5 == Input:
+        elif 6 == Input:
             print ("按任意键退出...")
             Result = raw_input()
             break

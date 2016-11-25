@@ -3,8 +3,9 @@
 ############################################
 #三汇一键加班系统
 #后期需要改进事项：。
-#1.修改配置时需要密码
-#2.本地无法读取密码的连接远程验证
+#1.第一次添加密码，后期修改密码时远程验证
+#2.添加修改密码功能（修改服务器的密码）
+#3.可视化界面预研
 ############################################
 
 import httplib, urllib
@@ -13,6 +14,7 @@ import re
 import random, string
 import base64
 import time
+import os
 from DESCode import *
 from ConfigFileIO import *
 
@@ -402,8 +404,6 @@ class CMIME:
             self.__Buffer += "%s\r\n" % Value
         else:
             self.__Buffer += "\r\n"
-        #MIME结尾标志
-        self.__Buffer += "--%s\r\n" % self.boundary
 
 class CUserInfo:
     UserName = None
@@ -439,6 +439,8 @@ def AddWork(cUserInfo):
     SuccessStr = "正在进入OA系统，请稍候..."
     #时间格式定义
     TIME_FORMAT = "%X"
+    #Url数据缓存
+    pszUrlTemp = None
 
     #检测数据有效性
     if None==cUserInfo.UserName or None==cUserInfo.Password or 0==len(cUserInfo.Reason):
@@ -472,29 +474,49 @@ def AddWork(cUserInfo):
         return 2
     AckCode, AckHead, AckBody = cHttp.Receive()
     #验证表单数据
-    if 200 == AckCode:
-        print ("该表单已存在，开通会员服务即可自动提交未填写完表单")
-        print ("由于程序猿太懒，该功能暂未实现，根据打赏金额可考虑实现该功能")
-        return 4
-    elif 302 != AckCode:
+    if 302 == AckCode:
+        ResData = ""
+        for HeadType in AckHead:
+            if HeadType[0] == "location":
+                ResData = HeadType[1].decode("GBK").encode("utf8")
+        #根据正则表达式填写表单
+        cForm.run_id = cRegex.Match(r'RUN_ID=(.*?)&', ResData, 1)
+        cForm.prcs_id = cRegex.Match(r'PRCS_ID=(.*?)&', ResData, 1)
+        cForm.flow_prcs = cRegex.Match(r'FLOW_PRCS=(.*?)&', ResData, 1)
+        cForm.prcs_key_id = cRegex.Match(r'PRCS_KEY_ID=(.*)', ResData, 1)
+        if None==cForm.run_id or None==cForm.prcs_id or None==cForm.flow_prcs or None==cForm.prcs_key_id:
+            return 1
+    elif 200 == AckCode:
+        print ("新建表单失败，正在查找已有表单数据……")
+        #请求数据
+        ReqUrl = "/portal/personal/workflow.php"
+        if False == cHttp.Send("GET", ReqUrl):
+            return 2
+        AckCode, AckHead, AckBody = cHttp.Receive()
+        if 200 != AckCode:
+            return 2
+        ResData = cUnZip.Decompress(AckBody).decode("GBK").encode("utf8")
+        #查找表单数据。构建正则表达式
+        szRegexTemp = "<td align=\"left\">.*?openURL\(.*?,.*?,'(.*?)'\)\">加班登记"
+        szRegexTemp += "（%s）" % time.strftime("%Y年%m月%d日", time.localtime())
+        szRegexTemp += ".*?-%s" % cUserInfo.UserName.decode("GBK").encode("utf8")
+        pszUrlTemp = cRegex.Match(szRegexTemp, ResData, 1)
+        if (None == pszUrlTemp):
+            print ("没有找到有效表单")
+            return 1
+        print ("查找成功，正在执行后续步骤……")
+    else:
         print ("接收到响应错误，HTTP返回码为%d") % AckCode
         return 2
-    ResData = ""
-    for HeadType in AckHead:
-        if HeadType[0] == "location":
-            ResData = HeadType[1]
-    #根据正则表达式填写表单
-    cForm.run_id = cRegex.Match(r'RUN_ID=(.*?)&', ResData, 1)
-    cForm.prcs_id = cRegex.Match(r'PRCS_ID=(.*?)&', ResData, 1)
-    cForm.flow_prcs = cRegex.Match(r'FLOW_PRCS=(.*?)&', ResData, 1)
-    cForm.prcs_key_id = cRegex.Match(r'PRCS_KEY_ID=(.*?)&', ResData, 1)
-    if None==cForm.run_id or None==cForm.prcs_id or None==cForm.flow_prcs or None==cForm.prcs_key_id:
-        return 1
 
     #Step4：继续获取表单
-    ReqUrl = "/general/workflow/list/input_form/?MENU_FLAG=&"
-    ReqUrl += "RUN_ID=%s&FLOW_ID=%s&PRCS_ID=%s&FLOW_PRCS=%s&AUTO_NEW=1&PRCS_KEY_ID=%s" % \
-                   (cForm.run_id, cForm.flow_id, cForm.prcs_id, cForm.flow_prcs, cForm.prcs_key_id)
+    if None == pszUrlTemp:
+        ReqUrl = "/general/workflow/list/input_form/?MENU_FLAG=&"
+        ReqUrl += "RUN_ID=%s&FLOW_ID=%s&PRCS_ID=%s&FLOW_PRCS=%s&AUTO_NEW=1&PRCS_KEY_ID=%s" % \
+                  (cForm.run_id, cForm.flow_id, cForm.prcs_id, cForm.flow_prcs, cForm.prcs_key_id)
+    else:
+        ReqUrl = pszUrlTemp
+
     if False == cHttp.Send("GET", ReqUrl):
         return 2
     AckCode, AckHead, AckBody = cHttp.Receive()
@@ -507,8 +529,8 @@ def AddWork(cUserInfo):
         return 1
     cForm.run_name = urllib.unquote(cForm.run_name)
     cForm.run_name_old = cForm.run_name
-    cForm.data_70 = cRegex.Match(r'（(.*?)）(.*?)-(.*)', Data, 2)
-    cForm.data_68 = cRegex.Match(r'（(.*?)）(.*?)-(.*)', Data, 3)
+    cForm.data_70 = cRegex.Match(r'（(.*?)）(.*?)-(.*)', cForm.run_name, 2)
+    cForm.data_68 = cRegex.Match(r'（(.*?)）(.*?)-(.*)', cForm.run_name, 3)
     if None==cForm.data_70 or None==cForm.data_68:
         return 1
     #填写加班基本参数
@@ -529,7 +551,7 @@ def AddWork(cUserInfo):
     cForm.data_73 = cUserInfo.Reason
 
     #Step5：提交当前用户名
-    cHttp.ReqHeader.setdefault("Origin", "http://do.sanhuid.com")
+    cHttp.SetReqHead("Origin", "http://do.sanhuid.com")
     if False == cHttp.Send("POST", "/general/workflow/list/input_form/run_name_submit.php", ""):
         return 2
     AckCode, AckHead, AckBody = cHttp.Receive()
@@ -537,17 +559,22 @@ def AddWork(cUserInfo):
         return 2
 
     #Step6：加班申请，组装Body数据
-    cHttp.ReqHeader.setdefault("Cache-Control", "max-age=0")
-    cHttp.ReqHeader.setdefault("Upgrade-Insecure-Requests", "1")
-    cHttp.ReqHeader.setdefault("Content-Type", "multipart/form-data; boundary=%s" % cMine.boundary)
+    cHttp.SetReqHead("Cache-Control", "max-age=0")
+    cHttp.SetReqHead("Upgrade-Insecure-Requests", "1")
+    cHttp.SetReqHead("Content-Type", "multipart/form-data; boundary=%s" % cMine.boundary)
     cHttp.Send("POST", "/general/workflow/list/input_form/input_submit.php", cMine.AssembleMimeData(False, cForm))
     AckCode, AckHead, AckBody = cHttp.Receive()
     if 200 != AckCode:
         return 2
     Data = cUnZip.Decompress(AckBody).decode("GBK").encode("utf8")
+    #警告标志
+    Alert = cRegex.Match(r'alert\("(.*?)"\)', Data, 1)
+    if None != Alert:
+        print ("提交表单信息错误：%s") % Alert.decode("GBK").encode("utf8")
+        return 5
     #转交成功标志
-    if None == Data.find("\u8f6c\u4ea4\u6210\u529f"):
-        print ("提交的表单信息错误")
+    if None == Data.find(r"\u8f6c\u4ea4\u6210\u529f"):
+        print ("提交表单信息错误：未知原因")
         return 5
 
     #Step7：第二次提交表单
@@ -737,6 +764,8 @@ if __name__ == "__main__":
             ChangeConfig(cUserInfo, True)
             SaveFile(cUserInfo, cCfgFile, des)
 
+        #清屏
+        osClear = os.system("cls")
         #打印文件并询问
         print("\n*********************************************************")
         print ("欢迎进入一键加班系统！")
@@ -776,7 +805,10 @@ if __name__ == "__main__":
             szTemp += "是, " if 1==cUserInfo.Bus else "否, "
             szTemp += "加班理由: %s" % cUserInfo.Reason
             print (szTemp)
+            print ("按任意键继续...")
+            Result = raw_input()
             continue
+
         elif 4 == Input:
             #验证密码
             Password = raw_input("请输入本地保存的密码: ")

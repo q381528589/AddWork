@@ -266,13 +266,17 @@ class CRegex:
     #函数参数：Regex        ：正则表达式
     #函数参数：Data         ：原始数据
     #函数参数：Position     ：提取位置
-    def Match(self, Regex, Data, Position):
+    #函数参数：bPrintError  ：是否打印错误信息
+    def Match(self, Regex, Data, Position, bPrintError=True):
         RegexResult = re.search(Regex, Data, re.M|re.I)
         if None == RegexResult:
-            print ("正则表达式错误或者没有匹配到数据")
+            if True == bPrintError:
+                print ("正则表达式错误或者没有匹配到数据")
             return None
+
         if None == RegexResult.group(Position):
-            print ("输入的提取位置与正则表达式不符")
+            if True == bPrintError:
+                print ("输入的提取位置与正则表达式不符")
             return None
 
         return RegexResult.group(Position)
@@ -568,9 +572,9 @@ def AddWork(cUserInfo):
         return 2
     Data = cUnZip.Decompress(AckBody).decode("GBK").encode("utf8")
     #警告标志
-    Alert = cRegex.Match(r'alert\("(.*?)"\)', Data, 1)
+    Alert = cRegex.Match(r'alert\("(.*?)"\)', Data, 1, False)
     if None != Alert:
-        print ("提交表单信息错误：%s") % Alert.decode("GBK").encode("utf8")
+        print ("提交表单信息错误：%s") % Alert
         return 5
     #转交成功标志
     if None == Data.find(r"\u8f6c\u4ea4\u6210\u529f"):
@@ -768,7 +772,7 @@ if __name__ == "__main__":
         osClear = os.system("cls")
         #打印文件并询问
         print("\n*********************************************************")
-        print ("欢迎进入一键加班系统！")
+        print ("欢迎使用杭州三汇一键加班脚本！")
         print ("当前用户名: %s\n") % UserName
         print ("请选择以下选项：")
         print ("1.执行一键加班程序")

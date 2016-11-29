@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 ############################################
-#ä¸‰æ±‡ä¸€é”®åŠ ç­ç³»ç»Ÿ
-#åæœŸéœ€è¦æ”¹è¿›äº‹é¡¹ï¼šã€‚
-#1.ç¬¬ä¸€æ¬¡æ·»åŠ å¯†ç ï¼ŒåæœŸä¿®æ”¹å¯†ç æ—¶è¿œç¨‹éªŒè¯
-#2.æ·»åŠ ä¿®æ”¹å¯†ç åŠŸèƒ½ï¼ˆä¿®æ”¹æœåŠ¡å™¨çš„å¯†ç ï¼‰
-#3.å¯è§†åŒ–ç•Œé¢é¢„ç ”
+#Èı»ãÒ»¼ü¼Ó°àÏµÍ³
+#ºóÆÚĞèÒª¸Ä½øÊÂÏî£º¡£
+#1.µÚÒ»´ÎÌí¼ÓÃÜÂë£¬ºóÆÚĞŞ¸ÄÃÜÂëÊ±Ô¶³ÌÑéÖ¤
+#2.Ìí¼ÓĞŞ¸ÄÃÜÂë¹¦ÄÜ£¨ĞŞ¸Ä·şÎñÆ÷µÄÃÜÂë£©
+#3.¿ÉÊÓ»¯½çÃæÔ¤ÑĞ
 ############################################
 
 import httplib, urllib
@@ -18,7 +18,7 @@ import os
 from DESCode import *
 from ConfigFileIO import *
 
-#Cookieç±»
+#CookieÀà
 class CCookie:
     __PhpSessionId = None
     __UserNameCookie = None
@@ -27,21 +27,21 @@ class CCookie:
     __CreakWork="new"
     CookieBuffer = None
 
-    #å‡½æ•°åç§°ï¼šCCookie::__init__
-    #å‡½æ•°åŠŸèƒ½ï¼šæ„é€ å‡½æ•°
-    #å‡½æ•°è¿”å›ï¼šæ— 
-    #å‡½æ•°å‚æ•°ï¼šæ— 
+    #º¯ÊıÃû³Æ£ºCCookie::__init__
+    #º¯Êı¹¦ÄÜ£º¹¹Ôìº¯Êı
+    #º¯Êı·µ»Ø£ºÎŞ
+    #º¯Êı²ÎÊı£ºÎŞ
     def __init__(self):
         pass
 
-    #å‡½æ•°åç§°ï¼šCCookie::SetCookie
-    #å‡½æ•°åŠŸèƒ½ï¼šå°†è¯·æ±‚Set-Cookieå­—æ®µæ‰€éœ€è¦çš„Cookieå¡«å…¥ç›¸åº”å­—æ®µ
-    #å‡½æ•°è¿”å›ï¼šæ— 
-    #å‡½æ•°å‚æ•°ï¼šCookies   ï¼šCookieé›†åˆ
+    #º¯ÊıÃû³Æ£ºCCookie::SetCookie
+    #º¯Êı¹¦ÄÜ£º½«ÇëÇóSet-Cookie×Ö¶ÎËùĞèÒªµÄCookieÌîÈëÏàÓ¦×Ö¶Î
+    #º¯Êı·µ»Ø£ºÎŞ
+    #º¯Êı²ÎÊı£ºCookies   £ºCookie¼¯ºÏ
     def SetCookie(self, Cookies):
         if (None == Cookies):
             return
-        #åˆ†å‰²å­—æ®µ
+        #·Ö¸î×Ö¶Î
         SetCookieList = Cookies.split(', ')
         for SetCookie in SetCookieList:
             CookieList = SetCookie.split('; ')
@@ -55,17 +55,17 @@ class CCookie:
                     self.__OAUserId = FieldList[1]
                 elif (-1 != FieldList[0].find("SID_")):
                     self.__SID = FieldList[1]
-        #ç»„è£…Cookies
+        #×é×°Cookies
         self.__Assemble()
 
-    #å‡½æ•°åç§°ï¼šCCookie::__Assemble
-    #å‡½æ•°åŠŸèƒ½ï¼šç»„è£…Cookieæˆå­—ç¬¦ä¸²
-    #å‡½æ•°è¿”å›ï¼šç»„è£…åçš„å­—ç¬¦ä¸²
-    #å‡½æ•°å‚æ•°ï¼šæ— 
+    #º¯ÊıÃû³Æ£ºCCookie::__Assemble
+    #º¯Êı¹¦ÄÜ£º×é×°Cookie³É×Ö·û´®
+    #º¯Êı·µ»Ø£º×é×°ºóµÄ×Ö·û´®
+    #º¯Êı²ÎÊı£ºÎŞ
     def __Assemble(self):
-        #åˆå§‹åŒ–Cookieç¼“å­˜
+        #³õÊ¼»¯Cookie»º´æ
         self.CookieBuffer = ""
-        #ä¾æ¬¡æ·»åŠ Cookieå€¼
+        #ÒÀ´ÎÌí¼ÓCookieÖµ
         if None!=self.__PhpSessionId:
             self.CookieBuffer = self.CookieBuffer + "PHPSESSID=" + self.__PhpSessionId + "; "
         if None!=self.__UserNameCookie:
@@ -78,33 +78,33 @@ class CCookie:
 
         return self.CookieBuffer
 
-#HTTPæ•°æ®æ”¶å‘ç±»
+#HTTPÊı¾İÊÕ·¢Àà
 class CHttp:
-    #è¿æ¥ç¬¦å·
+    #Á¬½Ó·ûºÅ
     __Connect = None
-    #è¯·æ±‚ç±»å‹
+    #ÇëÇóÀàĞÍ
     __Method = ""
-    #è¯·æ±‚Url
+    #ÇëÇóUrl
     __ReqUrl = ""
-    #è¯·æ±‚å¤´éƒ¨
+    #ÇëÇóÍ·²¿
     __ReqHead = {}
-    #è¯·æ±‚Cookie
+    #ÇëÇóCookie
     __cCookie = CCookie()
-    #è¯·æ±‚Body
+    #ÇëÇóBody
     __ReqBody = ""
-    #å“åº”
+    #ÏìÓ¦
     __Response = ""
-    #å“åº”ç 
+    #ÏìÓ¦Âë
     __AckCode = 200
-    #å“åº”å¤´éƒ¨
+    #ÏìÓ¦Í·²¿
     __AckHead = []
-    #å“åº”æ•°æ®
+    #ÏìÓ¦Êı¾İ
     __AckBody = ""
 
-    #å‡½æ•°åç§°ï¼šCHttp::__init__
-    #å‡½æ•°åŠŸèƒ½ï¼šæ„é€ å‡½æ•°
-    #å‡½æ•°è¿”å›ï¼šæ— 
-    #å‡½æ•°å‚æ•°ï¼šæ— 
+    #º¯ÊıÃû³Æ£ºCHttp::__init__
+    #º¯Êı¹¦ÄÜ£º¹¹Ôìº¯Êı
+    #º¯Êı·µ»Ø£ºÎŞ
+    #º¯Êı²ÎÊı£ºÎŞ
     def __init__(self):
         self.__ReqHead = {"Host":"do.sanhuid.com"
             , "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
@@ -115,75 +115,75 @@ class CHttp:
             , "Accept-Encoding":"gzip, deflate"
             , "Accept-Language":"zh-CN,zh;q=0.8"}
 
-    #å‡½æ•°åç§°ï¼šCHttp::SetReqHead
-    #å‡½æ•°åŠŸèƒ½ï¼šæ·»åŠ /ä¿®æ”¹è¯·æ±‚å¤´éƒ¨æ•°æ®
-    #å‡½æ•°è¿”å›ï¼šæ— 
-    #å‡½æ•°å‚æ•°ï¼šKey       ï¼šå­—å…¸Keyï¼Œå­—æ®µç±»å‹
-    #å‡½æ•°å‚æ•°ï¼šValue     ï¼šå­—å…¸Valueï¼Œå­—æ®µå‚æ•°
+    #º¯ÊıÃû³Æ£ºCHttp::SetReqHead
+    #º¯Êı¹¦ÄÜ£ºÌí¼Ó/ĞŞ¸ÄÇëÇóÍ·²¿Êı¾İ
+    #º¯Êı·µ»Ø£ºÎŞ
+    #º¯Êı²ÎÊı£ºKey       £º×ÖµäKey£¬×Ö¶ÎÀàĞÍ
+    #º¯Êı²ÎÊı£ºValue     £º×ÖµäValue£¬×Ö¶Î²ÎÊı
     def SetReqHead(self, Key, Value):
         self.__ReqHead.setdefault(Key, Value)
 
-    #å‡½æ•°åç§°ï¼šCHttp::DelReqHead
-    #å‡½æ•°åŠŸèƒ½ï¼šåˆ é™¤è¯·æ±‚å¤´éƒ¨æ•°æ®
-    #å‡½æ•°è¿”å›ï¼šæ— 
-    #å‡½æ•°å‚æ•°ï¼šKey       ï¼šå­—å…¸Keyï¼Œå­—æ®µç±»å‹
+    #º¯ÊıÃû³Æ£ºCHttp::DelReqHead
+    #º¯Êı¹¦ÄÜ£ºÉ¾³ıÇëÇóÍ·²¿Êı¾İ
+    #º¯Êı·µ»Ø£ºÎŞ
+    #º¯Êı²ÎÊı£ºKey       £º×ÖµäKey£¬×Ö¶ÎÀàĞÍ
     def DelReqHead(self, Key):
         del self.__ReqHead[Key]
 
-    #å‡½æ•°åç§°ï¼šCHttp::Connect
-    #å‡½æ•°åŠŸèƒ½ï¼šè¿æ¥æœåŠ¡å™¨
-    #å‡½æ•°è¿”å›ï¼šTrueæˆåŠŸï¼ŒFalseå¤±è´¥
-    #å‡½æ•°å‚æ•°ï¼šIpAddr    ï¼šæœåŠ¡å™¨IPåœ°å€
-    #å‡½æ•°å‚æ•°ï¼šPort      ï¼šæœåŠ¡å™¨ç«¯å£ï¼Œé»˜è®¤ä¸º80
+    #º¯ÊıÃû³Æ£ºCHttp::Connect
+    #º¯Êı¹¦ÄÜ£ºÁ¬½Ó·şÎñÆ÷
+    #º¯Êı·µ»Ø£ºTrue³É¹¦£¬FalseÊ§°Ü
+    #º¯Êı²ÎÊı£ºIpAddr    £º·şÎñÆ÷IPµØÖ·
+    #º¯Êı²ÎÊı£ºPort      £º·şÎñÆ÷¶Ë¿Ú£¬Ä¬ÈÏÎª80
     def Connect(self, IpAddr, Port=80):
         self.__Connect = httplib.HTTPConnection(IpAddr, Port)
 
-    #å‡½æ•°åç§°ï¼šCHttp::Send
-    #å‡½æ•°åŠŸèƒ½ï¼šå‘é€HTTPè¯·æ±‚
-    #å‡½æ•°è¿”å›ï¼šTrueæˆåŠŸï¼ŒFalseå¤±è´¥
-    #å‡½æ•°å‚æ•°ï¼šMethod    ï¼šè¯·æ±‚ç±»å‹
-    #å‡½æ•°å‚æ•°ï¼šReqUrl    ï¼šè¯·æ±‚URL
-    #å‡½æ•°å‚æ•°ï¼šReqBody   ï¼šè¯·æ±‚ä½“
+    #º¯ÊıÃû³Æ£ºCHttp::Send
+    #º¯Êı¹¦ÄÜ£º·¢ËÍHTTPÇëÇó
+    #º¯Êı·µ»Ø£ºTrue³É¹¦£¬FalseÊ§°Ü
+    #º¯Êı²ÎÊı£ºMethod    £ºÇëÇóÀàĞÍ
+    #º¯Êı²ÎÊı£ºReqUrl    £ºÇëÇóURL
+    #º¯Êı²ÎÊı£ºReqBody   £ºÇëÇóÌå
     def Send(self, Method, ReqUrl, ReqBody=None):
-        #æ£€æµ‹æ•°æ®æœ‰æ•ˆæ€§
+        #¼ì²âÊı¾İÓĞĞ§ĞÔ
         if None==Method or None==ReqUrl:
-            print ("å‘é€HTTPè¯·æ±‚æ—¶ï¼Œè¯·æ±‚ç±»å‹æˆ–Urlæ— æ•ˆ")
+            print ("·¢ËÍHTTPÇëÇóÊ±£¬ÇëÇóÀàĞÍ»òUrlÎŞĞ§")
             return False
         if 0 == len(self.__ReqHead):
-            print ("å‘é€HTTPè¯·æ±‚æ—¶ï¼Œè¯·æ±‚å¤´éƒ¨æ²¡æœ‰ä»»ä½•æ•°æ®")
+            print ("·¢ËÍHTTPÇëÇóÊ±£¬ÇëÇóÍ·²¿Ã»ÓĞÈÎºÎÊı¾İ")
             return False
-        #æ‹·è´å¹¶æ‰“å°æ•°æ®
+        #¿½±´²¢´òÓ¡Êı¾İ
         self.__Method = Method
         self.__ReqUrl = ReqUrl
         self.__ReqBody = ReqBody
         print ("%s %s HTTP/1.1") % (Method, ReqUrl)
-        #æ‹·è´cookieå­—æ®µåˆ°ReqHead
+        #¿½±´cookie×Ö¶Îµ½ReqHead
         if None!=self.__cCookie.CookieBuffer:
             self.SetReqHead("Cookie", self.__cCookie.CookieBuffer)
 
-        #æ ¹æ®ä¸åŒç±»å‹å‘é€è¯·æ±‚æ•°æ®
+        #¸ù¾İ²»Í¬ÀàĞÍ·¢ËÍÇëÇóÊı¾İ
         try:
             if "POST" == Method:
                 self.__Connect.request(method=Method, url=ReqUrl,body=ReqBody, headers=self.__ReqHead)
             if "GET" == Method:
                 self.__Connect.request(method=Method, url=ReqUrl, headers=self.__ReqHead)
         except:
-            print ("å‘é€HTTPè¯·æ±‚æ•°æ®å¤±è´¥")
+            print ("·¢ËÍHTTPÇëÇóÊı¾İÊ§°Ü")
             return False
 
         return True;
 
-    #å‡½æ•°åç§°ï¼šCHttp::Receive
-    #å‡½æ•°åŠŸèƒ½ï¼šæ¥æ”¶HTTPå“åº”
-    #å‡½æ•°è¿”å›ï¼šAckCode   ï¼šå“åº”ç ï¼Œé”™è¯¯è¿”å›0
-    #å‡½æ•°è¿”å›ï¼šAckHead   ï¼šå“åº”å¤´éƒ¨ï¼Œé”™è¯¯è¿”å›None
-    #å‡½æ•°è¿”å›ï¼šAckBody   ï¼šå“åº”ä½“ï¼Œé”™è¯¯è¿”å›None
-    #å‡½æ•°å‚æ•°ï¼šæ— 
+    #º¯ÊıÃû³Æ£ºCHttp::Receive
+    #º¯Êı¹¦ÄÜ£º½ÓÊÕHTTPÏìÓ¦
+    #º¯Êı·µ»Ø£ºAckCode   £ºÏìÓ¦Âë£¬´íÎó·µ»Ø0
+    #º¯Êı·µ»Ø£ºAckHead   £ºÏìÓ¦Í·²¿£¬´íÎó·µ»ØNone
+    #º¯Êı·µ»Ø£ºAckBody   £ºÏìÓ¦Ìå£¬´íÎó·µ»ØNone
+    #º¯Êı²ÎÊı£ºÎŞ
     def Receive(self):
         try:
             self.__Response = self.__Connect.getresponse()
         except:
-            print ("æ¥æ”¶HTTPå“åº”å¤±è´¥")
+            print ("½ÓÊÕHTTPÏìÓ¦Ê§°Ü")
             return 0, None, None
         self.__AckCode = self.__Response.status
         self.__AckHead = self.__Response.getheaders()
@@ -191,36 +191,36 @@ class CHttp:
         self.__AckBody = self.__Response.read()
         return self.__AckCode, self.__AckHead, self.__AckBody
     
-    #å‡½æ•°åç§°ï¼šCHttp::Close
-    #å‡½æ•°åŠŸèƒ½ï¼šå…³é—­Httpè¿æ¥
-    #å‡½æ•°è¿”å›ï¼šæ— 
-    #å‡½æ•°å‚æ•°ï¼šæ— 
+    #º¯ÊıÃû³Æ£ºCHttp::Close
+    #º¯Êı¹¦ÄÜ£º¹Ø±ÕHttpÁ¬½Ó
+    #º¯Êı·µ»Ø£ºÎŞ
+    #º¯Êı²ÎÊı£ºÎŞ
     def Close(self):
         self.__Connect.close()
 
-#è§£å‹ç±»
+#½âÑ¹Àà
 class CUnzip:
     __gziper = ""
 
-    #å‡½æ•°åç§°ï¼šCUnzip::__init__
-    #å‡½æ•°åŠŸèƒ½ï¼šæ„é€ å‡½æ•°
-    #å‡½æ•°è¿”å›ï¼šæ— 
-    #å‡½æ•°å‚æ•°ï¼šæ— 
+    #º¯ÊıÃû³Æ£ºCUnzip::__init__
+    #º¯Êı¹¦ÄÜ£º¹¹Ôìº¯Êı
+    #º¯Êı·µ»Ø£ºÎŞ
+    #º¯Êı²ÎÊı£ºÎŞ
     def __init__(self):
         pass
 
-    #å‡½æ•°åç§°ï¼šCCookie::Decompress
-    #å‡½æ•°åŠŸèƒ½ï¼šè§£å‹gzipæ•°æ®
-    #å‡½æ•°è¿”å›ï¼šè§£å‹åæ•°æ®
-    #å‡½æ•°å‚æ•°ï¼šSrcData       ï¼šè§£å‹å‰æ•°æ®
+    #º¯ÊıÃû³Æ£ºCCookie::Decompress
+    #º¯Êı¹¦ÄÜ£º½âÑ¹gzipÊı¾İ
+    #º¯Êı·µ»Ø£º½âÑ¹ºóÊı¾İ
+    #º¯Êı²ÎÊı£ºSrcData       £º½âÑ¹Ç°Êı¾İ
     def Decompress(self, SrcData):
         compressedstream = StringIO.StringIO(SrcData)
         __gziper = gzip.GzipFile(fileobj=compressedstream)
-        #è¯»å–è§£å‹ç¼©åæ•°æ®
+        #¶ÁÈ¡½âÑ¹ËõºóÊı¾İ
         DstData = __gziper.read()
         return DstData
 
-#è¡¨å•ç±»
+#±íµ¥Àà
 class CForm:
     run_name_old = ""
     run_id = ""
@@ -229,77 +229,77 @@ class CForm:
     prcs_id = ""
     flow_prcs = ""
     prcs_key_id=""
-    #æ—¶é—´ï¼šæ—¶åˆ†ç§’
+    #Ê±¼ä£ºÊ±·ÖÃë
     data_67 = ""
-    #å§“å
+    #ĞÕÃû
     data_68 = ""
-    #éƒ¨é—¨
+    #²¿ÃÅ
     data_70 = ""
-    #åŠ ç­ç†ç”±
+    #¼Ó°àÀíÓÉ
     data_73 = ""
-    #åŠ ç­é¤
-    data_89 = "æ˜¯"
-    #ç­è½¦
-    data_90 = "å¦"
-    #æ—¥æœŸï¼šå¹´æœˆæ—¥
+    #¼Ó°à²Í
+    data_89 = "ÊÇ"
+    #°à³µ
+    data_90 = "·ñ"
+    #ÈÕÆÚ£ºÄêÔÂÈÕ
     data_91 = ""
 
-    #å‡½æ•°åç§°ï¼šCForm::__init__
-    #å‡½æ•°åŠŸèƒ½ï¼šæ„é€ å‡½æ•°
-    #å‡½æ•°è¿”å›ï¼šæ— 
-    #å‡½æ•°å‚æ•°ï¼šæ— 
+    #º¯ÊıÃû³Æ£ºCForm::__init__
+    #º¯Êı¹¦ÄÜ£º¹¹Ôìº¯Êı
+    #º¯Êı·µ»Ø£ºÎŞ
+    #º¯Êı²ÎÊı£ºÎŞ
     def __init__(self):
         pass
 
-#æ­£åˆ™åŒ¹é…ç±»
+#ÕıÔòÆ¥ÅäÀà
 class CRegex:
-    #å‡½æ•°åç§°ï¼šCRegex::__init__
-    #å‡½æ•°åŠŸèƒ½ï¼šæ„é€ å‡½æ•°
-    #å‡½æ•°è¿”å›ï¼šæ— 
-    #å‡½æ•°å‚æ•°ï¼šæ— 
+    #º¯ÊıÃû³Æ£ºCRegex::__init__
+    #º¯Êı¹¦ÄÜ£º¹¹Ôìº¯Êı
+    #º¯Êı·µ»Ø£ºÎŞ
+    #º¯Êı²ÎÊı£ºÎŞ
     def __init__(self):
         pass
 
-    #å‡½æ•°åç§°ï¼šCRegex::Match
-    #å‡½æ•°åŠŸèƒ½ï¼šæ­£åˆ™è¡¨è¾¾å¼åŒ¹é…
-    #å‡½æ•°è¿”å›ï¼šåŒ¹é…åˆ°çš„æ•°æ®
-    #å‡½æ•°å‚æ•°ï¼šRegex        ï¼šæ­£åˆ™è¡¨è¾¾å¼
-    #å‡½æ•°å‚æ•°ï¼šData         ï¼šåŸå§‹æ•°æ®
-    #å‡½æ•°å‚æ•°ï¼šPosition     ï¼šæå–ä½ç½®
-    #å‡½æ•°å‚æ•°ï¼šbPrintError  ï¼šæ˜¯å¦æ‰“å°é”™è¯¯ä¿¡æ¯
+    #º¯ÊıÃû³Æ£ºCRegex::Match
+    #º¯Êı¹¦ÄÜ£ºÕıÔò±í´ïÊ½Æ¥Åä
+    #º¯Êı·µ»Ø£ºÆ¥Åäµ½µÄÊı¾İ
+    #º¯Êı²ÎÊı£ºRegex        £ºÕıÔò±í´ïÊ½
+    #º¯Êı²ÎÊı£ºData         £ºÔ­Ê¼Êı¾İ
+    #º¯Êı²ÎÊı£ºPosition     £ºÌáÈ¡Î»ÖÃ
+    #º¯Êı²ÎÊı£ºbPrintError  £ºÊÇ·ñ´òÓ¡´íÎóĞÅÏ¢
     def Match(self, Regex, Data, Position, bPrintError=True):
         RegexResult = re.search(Regex, Data, re.M|re.I)
         if None == RegexResult:
             if True == bPrintError:
-                print ("æ­£åˆ™è¡¨è¾¾å¼é”™è¯¯æˆ–è€…æ²¡æœ‰åŒ¹é…åˆ°æ•°æ®")
+                print ("ÕıÔò±í´ïÊ½´íÎó»òÕßÃ»ÓĞÆ¥Åäµ½Êı¾İ")
             return None
 
         if None == RegexResult.group(Position):
             if True == bPrintError:
-                print ("è¾“å…¥çš„æå–ä½ç½®ä¸æ­£åˆ™è¡¨è¾¾å¼ä¸ç¬¦")
+                print ("ÊäÈëµÄÌáÈ¡Î»ÖÃÓëÕıÔò±í´ïÊ½²»·û")
             return None
 
         return RegexResult.group(Position)
 
-#MIMEç±»
+#MIMEÀà
 class CMIME:
     boundary = "----WebKitFormBoundary"
     __CharList = []
     __Buffer = ""
 
-    #å‡½æ•°åç§°ï¼šCMIME::__init__
-    #å‡½æ•°åŠŸèƒ½ï¼šæ„é€ å‡½æ•°
-    #å‡½æ•°è¿”å›ï¼šæ— 
-    #å‡½æ•°å‚æ•°ï¼šæ— 
+    #º¯ÊıÃû³Æ£ºCMIME::__init__
+    #º¯Êı¹¦ÄÜ£º¹¹Ôìº¯Êı
+    #º¯Êı·µ»Ø£ºÎŞ
+    #º¯Êı²ÎÊı£ºÎŞ
     def __init__(self):
         self.__CharList += random.sample('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', 16)
         self.boundary += string.join(self.__CharList).replace(' ', "")
 
-    #å‡½æ•°åç§°ï¼šCMIME::AssembleMimeData
-    #å‡½æ•°åŠŸèƒ½ï¼šç»„è£…MIMEæ•°æ®
-    #å‡½æ•°è¿”å›ï¼šç»„è£…å¥½çš„å­—ç¬¦ä¸²
-    #å‡½æ•°å‚æ•°ï¼šbAgain    ï¼šæ˜¯å¦ä¸ºç¬¬äºŒæ¬¡å‘é€
-    #å‡½æ•°å‚æ•°ï¼šcForm     ï¼šè¡¨å•æ•°æ®
+    #º¯ÊıÃû³Æ£ºCMIME::AssembleMimeData
+    #º¯Êı¹¦ÄÜ£º×é×°MIMEÊı¾İ
+    #º¯Êı·µ»Ø£º×é×°ºÃµÄ×Ö·û´®
+    #º¯Êı²ÎÊı£ºbAgain    £ºÊÇ·ñÎªµÚ¶ş´Î·¢ËÍ
+    #º¯Êı²ÎÊı£ºcForm     £º±íµ¥Êı¾İ
     def AssembleMimeData(self, bAgain, cForm):
         if False == bAgain:
             self.__AddMimeData("PRCS_TO", False, None, False)
@@ -369,40 +369,40 @@ class CMIME:
         self.__AddMimeData("DISK_ID1", False, None, False)
         self.__AddMimeData("SIGN_DATA", False, None, False)
         if True == bAgain:
-            self.__AddMimeData("SMS_CONTENT", False, "å·¥ä½œå·²ç»“æŸï¼Œæµæ°´å·ï¼š%sï¼Œå·¥ä½œåç§°/æ–‡å·ï¼š%s" % (cForm.run_id, cForm.run_name), False)
+            self.__AddMimeData("SMS_CONTENT", False, "¹¤×÷ÒÑ½áÊø£¬Á÷Ë®ºÅ£º%s£¬¹¤×÷Ãû³Æ/ÎÄºÅ£º%s" % (cForm.run_id, cForm.run_name), False)
             self.__AddMimeData("remind_others_id", False, None, False)
-        #æ•°æ®ç»“æŸ
+        #Êı¾İ½áÊø
         self.__AddMimeData(None, False, None, True)
-        #è½¬ç æˆGBKå‘é€
-        return self.__Buffer.decode("utf8").encode("GBK")
+        #×ªÂë³ÉGBK·¢ËÍ
+        return self.__Buffer
 
-    #å‡½æ•°åç§°ï¼šCMIME::__AddMimeData
-    #å‡½æ•°åŠŸèƒ½ï¼šç»„è£…å•ä¸ªMIMEæ•°æ®
-    #å‡½æ•°è¿”å›ï¼šæ— 
-    #å‡½æ•°å‚æ•°ï¼šname      ï¼šContentæè¿°
-    #å‡½æ•°å‚æ•°ï¼šbAttach   ï¼šè¯¥å­—æ®µæ˜¯å¦æœ‰é™„ä»¶ç»„æˆéƒ¨åˆ†
-    #å‡½æ•°å‚æ•°ï¼šValue     ï¼šContentå†…å®¹
-    #å‡½æ•°å‚æ•°ï¼šbEnd      ï¼šMIMEæ˜¯å¦å…¨éƒ¨ç»“æŸ
+    #º¯ÊıÃû³Æ£ºCMIME::__AddMimeData
+    #º¯Êı¹¦ÄÜ£º×é×°µ¥¸öMIMEÊı¾İ
+    #º¯Êı·µ»Ø£ºÎŞ
+    #º¯Êı²ÎÊı£ºname      £ºContentÃèÊö
+    #º¯Êı²ÎÊı£ºbAttach   £º¸Ã×Ö¶ÎÊÇ·ñÓĞ¸½¼ş×é³É²¿·Ö
+    #º¯Êı²ÎÊı£ºValue     £ºContentÄÚÈİ
+    #º¯Êı²ÎÊı£ºbEnd      £ºMIMEÊÇ·ñÈ«²¿½áÊø
     def __AddMimeData(self, name, bAttach, Value, bEnd):
-        #ç»„è£…ç»“æŸï¼ŒåŠ è£…MIMEå°¾éƒ¨æ•°æ®
+        #×é×°½áÊø£¬¼Ó×°MIMEÎ²²¿Êı¾İ
         if bEnd:
             self.__Buffer += "--%s--\r\n\r\n" % self.boundary
             return
 
-        #å‚æ•°æ£€æµ‹
+        #²ÎÊı¼ì²â
         if None == name:
             return
 
-        #MIMEå¤´éƒ¨
+        #MIMEÍ·²¿
         self.__Buffer += "--%s\r\n" % self.boundary
-        #Contentæè¿°éƒ¨åˆ†
+        #ContentÃèÊö²¿·Ö
         self.__Buffer += "Content-Disposition: form-data; name=\"%s\"" % name
         if bAttach:
             self.__Buffer += "; filename=\"\"\r\n"
             self.__Buffer += "Content-Type: application/octet-stream\r\n"
         else:
             self.__Buffer += "\r\n"
-        #MIMEå†…å®¹éƒ¨åˆ†
+        #MIMEÄÚÈİ²¿·Ö
         self.__Buffer += "\r\n"
         if None != Value:
             self.__Buffer += "%s\r\n" % Value
@@ -410,110 +410,117 @@ class CMIME:
             self.__Buffer += "\r\n"
 
 class CUserInfo:
+    #ÓÃ»§Ãû
     UserName = None
+    #ÃÜÂë
     Password = None
+    #ÊÇ·ñ¼Ó°à²Í
     Dinner = 1
+    #ÊÇ·ñ³Ë×ø°à³µ
     Bus = 0
+    #¼Ó°àÀíÓÉ
     Reason = ""
+    #ÅäÖÃÎÄ¼şÊÇ·ñ±»ĞŞ¸Ä
     bFileChange = False
 
-    #å‡½æ•°åç§°ï¼šCMIME::__init__
-    #å‡½æ•°åŠŸèƒ½ï¼šæ„é€ å‡½æ•°
-    #å‡½æ•°è¿”å›ï¼šæ— 
-    #å‡½æ•°å‚æ•°ï¼šæ— 
+    #º¯ÊıÃû³Æ£ºCMIME::__init__
+    #º¯Êı¹¦ÄÜ£º¹¹Ôìº¯Êı
+    #º¯Êı·µ»Ø£ºÎŞ
+    #º¯Êı²ÎÊı£ºÎŞ
     def __init__(self, UserName):
         self.UserName = UserName
 
-#å‡½æ•°åç§°ï¼šAddWork
-#å‡½æ•°åŠŸèƒ½ï¼šæ‰§è¡Œä¸€é”®åŠ ç­
-#å‡½æ•°è¿”å›ï¼š0æˆåŠŸ 1å‚æ•°é”™è¯¯ 2ç½‘ç»œé”™è¯¯ 3è®¤è¯é”™è¯¯ 4è¡¨å•å·²å­˜åœ¨ 5æäº¤è¡¨å•é”™è¯¯ 6å…¶å®ƒé”™è¯¯
-#å‡½æ•°å‚æ•°ï¼šcUserInfo     ï¼šç”¨æˆ·ä¿¡æ¯
+#º¯ÊıÃû³Æ£ºAddWork
+#º¯Êı¹¦ÄÜ£ºÖ´ĞĞÒ»¼ü¼Ó°à
+#º¯Êı·µ»Ø£º0³É¹¦ 1²ÎÊı´íÎó 2ÍøÂç´íÎó 3ÈÏÖ¤´íÎó 4±íµ¥ÒÑ´æÔÚ 5Ìá½»±íµ¥´íÎó 6ÆäËü´íÎó
+#º¯Êı²ÎÊı£ºcUserInfo     £ºÓÃ»§ĞÅÏ¢
 def AddWork(cUserInfo):
-    #HTTPæ•°æ®æ”¶å‘
+    #HTTPÊı¾İÊÕ·¢
     cHttp = CHttp()
-    #Gzipæ•°æ®è§£å‹
+    #GzipÊı¾İ½âÑ¹
     cUnZip = CUnzip()
-    #åŠ ç­æäº¤è¡¨å•
+    #¼Ó°àÌá½»±íµ¥
     cForm = CForm()
-    #æ­£åˆ™è¡¨è¾¾å¼ç±»
+    #ÕıÔò±í´ïÊ½Àà
     cRegex = CRegex()
-    #MIMEç±»
+    #MIMEÀà
     cMine = CMIME()
-    #ç™»å½•æˆåŠŸå®šä¹‰
-    SuccessStr = "æ­£åœ¨è¿›å…¥OAç³»ç»Ÿï¼Œè¯·ç¨å€™..."
-    #æ—¶é—´æ ¼å¼å®šä¹‰
+    #µÇÂ¼³É¹¦¶¨Òå
+    SuccessStr = "ÕıÔÚ½øÈëOAÏµÍ³£¬ÇëÉÔºò..."
+    #Ê±¼ä¸ñÊ½¶¨Òå
     TIME_FORMAT = "%X"
-    #Urlæ•°æ®ç¼“å­˜
+    #UrlÊı¾İ»º´æ
     pszUrlTemp = None
 
-    #æ£€æµ‹æ•°æ®æœ‰æ•ˆæ€§
+    #¼ì²âÊı¾İÓĞĞ§ĞÔ
     if None==cUserInfo.UserName or None==cUserInfo.Password or 0==len(cUserInfo.Reason):
         return 1
-    #æ•°æ®ç¼–ç è½¬æ¢
-    cUserInfo.UserName = cUserInfo.UserName.decode("utf8").encode("GBK")
+    #Êı¾İ±àÂë×ª»»
+    cUserInfo.UserName = cUserInfo.UserName
     cUserInfo.Password = base64.b64encode(cUserInfo.Password)
 
-    #Step1ï¼šè¿æ¥
+    #Step1£ºÁ¬½Ó
     cHttp.Connect("120.27.241.239")
 
-    #Step2ï¼šç™»å½•
+    #Step2£ºµÇÂ¼
     ReqBody = urllib.urlencode({'UNAME': cUserInfo.UserName, 'PASSWORD': cUserInfo.Password, 'encode_type': 1})
     if False == cHttp.Send("POST", "/logincheck.php", ReqBody):
         return 2
     AckCode, AckHead, AckBody = cHttp.Receive()
     if 200 != AckCode:
         return 2
-    #è§£å‹æ•°æ®
-    Data = cUnZip.Decompress(AckBody).decode("GBK").encode("utf8")
-    #éªŒè¯ç™»å½•ç»“æœ
+    #½âÑ¹Êı¾İ
+    Data = cUnZip.Decompress(AckBody)
+    #ÑéÖ¤µÇÂ¼½á¹û
     Result = Data.find(SuccessStr)
     if -1 == Result:
-        print ("ç”¨æˆ·åæˆ–å¯†ç é”™è¯¯")
+        print ("ÓÃ»§Ãû»òÃÜÂë´íÎó")
         return 3
 
-    #Step3ï¼šæå–è¡¨å•
+    #Step3£ºÌáÈ¡±íµ¥
     cHttp.DelReqHead("Origin")
     cHttp.DelReqHead("Content-Type")
     if False == cHttp.Send("GET", "/general/workflow/new/edit.php?FLOW_ID=%s&AUTO_NEW=1" % cForm.flow_id):
         return 2
     AckCode, AckHead, AckBody = cHttp.Receive()
-    #éªŒè¯è¡¨å•æ•°æ®
+    #ÑéÖ¤±íµ¥Êı¾İ
     if 302 == AckCode:
         ResData = ""
         for HeadType in AckHead:
             if HeadType[0] == "location":
-                ResData = HeadType[1].decode("GBK").encode("utf8")
-        #æ ¹æ®æ­£åˆ™è¡¨è¾¾å¼å¡«å†™è¡¨å•
-        cForm.run_id = cRegex.Match(r'RUN_ID=(.*?)&', ResData, 1)
-        cForm.prcs_id = cRegex.Match(r'PRCS_ID=(.*?)&', ResData, 1)
-        cForm.flow_prcs = cRegex.Match(r'FLOW_PRCS=(.*?)&', ResData, 1)
-        cForm.prcs_key_id = cRegex.Match(r'PRCS_KEY_ID=(.*)', ResData, 1)
-        if None==cForm.run_id or None==cForm.prcs_id or None==cForm.flow_prcs or None==cForm.prcs_key_id:
-            return 1
+                ResData = HeadType[1]
     elif 200 == AckCode:
-        print ("æ–°å»ºè¡¨å•å¤±è´¥ï¼Œæ­£åœ¨æŸ¥æ‰¾å·²æœ‰è¡¨å•æ•°æ®â€¦â€¦")
-        #è¯·æ±‚æ•°æ®
+        print ("ĞÂ½¨±íµ¥Ê§°Ü£¬ÕıÔÚ²éÕÒÒÑÓĞ±íµ¥Êı¾İ¡­¡­")
+        #ÇëÇóÊı¾İ
         ReqUrl = "/portal/personal/workflow.php"
         if False == cHttp.Send("GET", ReqUrl):
             return 2
         AckCode, AckHead, AckBody = cHttp.Receive()
         if 200 != AckCode:
             return 2
-        ResData = cUnZip.Decompress(AckBody).decode("GBK").encode("utf8")
-        #æŸ¥æ‰¾è¡¨å•æ•°æ®ã€‚æ„å»ºæ­£åˆ™è¡¨è¾¾å¼
-        szRegexTemp = "<td align=\"left\">.*?openURL\(.*?,.*?,'(.*?)'\)\">åŠ ç­ç™»è®°"
-        szRegexTemp += "ï¼ˆ%sï¼‰" % time.strftime("%Yå¹´%mæœˆ%dæ—¥", time.localtime())
-        szRegexTemp += ".*?-%s" % cUserInfo.UserName.decode("GBK").encode("utf8")
+        ResData = cUnZip.Decompress(AckBody)
+        #²éÕÒ±íµ¥Êı¾İ¡£¹¹½¨ÕıÔò±í´ïÊ½
+        szRegexTemp = "<td align=\"left\">.*?openURL\(.*?,.*?,'(.*?)'\)\">¼Ó°àµÇ¼Ç"
+        szRegexTemp += "£¨%s£©" % time.strftime("%YÄê%mÔÂ%dÈÕ", time.localtime())
+        szRegexTemp += ".*?-%s" % cUserInfo.UserName
         pszUrlTemp = cRegex.Match(szRegexTemp, ResData, 1)
         if (None == pszUrlTemp):
-            print ("æ²¡æœ‰æ‰¾åˆ°æœ‰æ•ˆè¡¨å•")
+            print ("Ã»ÓĞÕÒµ½ÓĞĞ§±íµ¥")
             return 1
-        print ("æŸ¥æ‰¾æˆåŠŸï¼Œæ­£åœ¨æ‰§è¡Œåç»­æ­¥éª¤â€¦â€¦")
+        print ("²éÕÒ³É¹¦£¬ÕıÔÚÖ´ĞĞºóĞø²½Öè¡­¡­")
     else:
-        print ("æ¥æ”¶åˆ°å“åº”é”™è¯¯ï¼ŒHTTPè¿”å›ç ä¸º%d") % AckCode
+        print ("½ÓÊÕµ½ÏìÓ¦´íÎó£¬HTTP·µ»ØÂëÎª%d") % AckCode
         return 2
-
-    #Step4ï¼šç»§ç»­è·å–è¡¨å•
+		
+    #¸ù¾İÕıÔò±í´ïÊ½ÌîĞ´±íµ¥
+    cForm.run_id = cRegex.Match(r'RUN_ID=(.*?)&', ResData, 1)
+    cForm.prcs_id = cRegex.Match(r'PRCS_ID=(.*?)&', ResData, 1)
+    cForm.flow_prcs = cRegex.Match(r'FLOW_PRCS=(.*?)&', ResData, 1)
+    cForm.prcs_key_id = cRegex.Match(r'PRCS_KEY_ID=(.*)', ResData, 1)
+    if None==cForm.run_id or None==cForm.prcs_id or None==cForm.flow_prcs or None==cForm.prcs_key_id:
+        return 1
+    
+    #Step4£º¼ÌĞø»ñÈ¡±íµ¥
     if None == pszUrlTemp:
         ReqUrl = "/general/workflow/list/input_form/?MENU_FLAG=&"
         ReqUrl += "RUN_ID=%s&FLOW_ID=%s&PRCS_ID=%s&FLOW_PRCS=%s&AUTO_NEW=1&PRCS_KEY_ID=%s" % \
@@ -526,35 +533,35 @@ def AddWork(cUserInfo):
     AckCode, AckHead, AckBody = cHttp.Receive()
     if 200 != AckCode:
         return 2
-    Data = cUnZip.Decompress(AckBody).decode("GBK").encode("utf8")
-    #æ ¹æ®æ­£åˆ™è¡¨è¾¾å¼å¡«å†™è¡¨å•
+    Data = cUnZip.Decompress(AckBody)
+    #¸ù¾İÕıÔò±í´ïÊ½ÌîĞ´±íµ¥
     cForm.run_name = cRegex.Match(r'en_run_name.*?=[\s\S]*?run_name.*?= "(.*?)"', Data, 1)
     if None == cForm.run_name:
         return 1
-    cForm.run_name = urllib.unquote(cForm.run_name)
+    cForm.run_name = urllib.unquote(cForm.run_name).decode("utf8").encode("GBK")
     cForm.run_name_old = cForm.run_name
-    cForm.data_70 = cRegex.Match(r'ï¼ˆ(.*?)ï¼‰(.*?)-(.*)', cForm.run_name, 2)
-    cForm.data_68 = cRegex.Match(r'ï¼ˆ(.*?)ï¼‰(.*?)-(.*)', cForm.run_name, 3)
+    cForm.data_70 = cRegex.Match(r'£¨(.*?)£©(.*?)-(.*)', cForm.run_name, 2)
+    cForm.data_68 = cRegex.Match(r'£¨(.*?)£©(.*?)-(.*)', cForm.run_name, 3)
     if None==cForm.data_70 or None==cForm.data_68:
         return 1
-    #å¡«å†™åŠ ç­åŸºæœ¬å‚æ•°
+    #ÌîĞ´¼Ó°à»ù±¾²ÎÊı
     #TIME
     cForm.data_91 = time.strftime("%Y-%m-%d", time.localtime())
     cForm.data_67 = time.strftime(TIME_FORMAT, time.localtime())
-    #åŠ ç­é¤
+    #¼Ó°à²Í
     if (True == cUserInfo.Dinner):
-        cForm.data_89 = "æ˜¯"
+        cForm.data_89 = "ÊÇ"
     else:
-        cForm.data_89 = "å¦"
-    #åŠ ç­ç­è½¦
+        cForm.data_89 = "·ñ"
+    #¼Ó°à°à³µ
     if (True == cUserInfo.Bus):
-        cForm.data_90 = "æ˜¯"
+        cForm.data_90 = "ÊÇ"
     else:
-        cForm.data_90 = "å¦"
+        cForm.data_90 = "·ñ"
     #Reason
     cForm.data_73 = cUserInfo.Reason
 
-    #Step5ï¼šæäº¤å½“å‰ç”¨æˆ·å
+    #Step5£ºÌá½»µ±Ç°ÓÃ»§Ãû
     cHttp.SetReqHead("Origin", "http://do.sanhuid.com")
     if False == cHttp.Send("POST", "/general/workflow/list/input_form/run_name_submit.php", ""):
         return 2
@@ -562,7 +569,7 @@ def AddWork(cUserInfo):
     if 200 != AckCode:
         return 2
 
-    #Step6ï¼šåŠ ç­ç”³è¯·ï¼Œç»„è£…Bodyæ•°æ®
+    #Step6£º¼Ó°àÉêÇë£¬×é×°BodyÊı¾İ
     cHttp.SetReqHead("Cache-Control", "max-age=0")
     cHttp.SetReqHead("Upgrade-Insecure-Requests", "1")
     cHttp.SetReqHead("Content-Type", "multipart/form-data; boundary=%s" % cMine.boundary)
@@ -570,25 +577,25 @@ def AddWork(cUserInfo):
     AckCode, AckHead, AckBody = cHttp.Receive()
     if 200 != AckCode:
         return 2
-    Data = cUnZip.Decompress(AckBody).decode("GBK").encode("utf8")
-    #è­¦å‘Šæ ‡å¿—
+    Data = cUnZip.Decompress(AckBody)
+    #¾¯¸æ±êÖ¾
     Alert = cRegex.Match(r'alert\("(.*?)"\)', Data, 1, False)
     if None != Alert:
-        print ("æäº¤è¡¨å•ä¿¡æ¯é”™è¯¯ï¼š%s") % Alert
+        print ("Ìá½»±íµ¥ĞÅÏ¢´íÎó£º%s") % Alert
         return 5
-    #è½¬äº¤æˆåŠŸæ ‡å¿—
+    #×ª½»³É¹¦±êÖ¾
     if None == Data.find(r"\u8f6c\u4ea4\u6210\u529f"):
-        print ("æäº¤è¡¨å•ä¿¡æ¯é”™è¯¯ï¼šæœªçŸ¥åŸå› ")
+        print ("Ìá½»±íµ¥ĞÅÏ¢´íÎó£ºÎ´ÖªÔ­Òò")
         return 5
 
-    #Step7ï¼šç¬¬äºŒæ¬¡æäº¤è¡¨å•
+    #Step7£ºµÚ¶ş´ÎÌá½»±íµ¥
     cHttp.Send("POST", "/general/workflow/list/input_form/input_submit.php", cMine.AssembleMimeData(True, cForm))
     AckCode, AckHead, AckBody = cHttp.Receive()
     if 200 != AckCode:
         return 2
 
-    #Step8ï¼šç¡®è®¤åŠ ç­
-    #è·å–å½“å‰æ—¶é—´çš„æ¯«ç§’æ—¶é—´æˆ³
+    #Step8£ºÈ·ÈÏ¼Ó°à
+    #»ñÈ¡µ±Ç°Ê±¼äµÄºÁÃëÊ±¼ä´Á
     CurMillTime = int(time.time()*1000)
     ReqBody = "_search=false&nd=%s&rows=10&page=1&sidx=run_id&sord=desc" % CurMillTime
     cHttp.Send("POST", "/general/workflow/list/data/getdata.php?pageType=todo", ReqBody)
@@ -596,31 +603,31 @@ def AddWork(cUserInfo):
     if 200 != AckCode:
         return 2
 
-    #æ‰“å°æ—¥å¿—
-    print("ä¸€é”®åŠ ç­è„šæœ¬æ‰§è¡Œå®Œæˆï¼Œè¯·ç™»å½•ç½‘é¡µæŸ¥çœ‹å…·ä½“ä¿¡æ¯")
-    print("åŠ ç­ä¿¡æ¯ï¼š")
-    print("åŠ ç­æ—¶é—´ï¼š%s %s") % (cForm.data_91, cForm.data_67)
-    print("å§“åï¼š%s, éƒ¨é—¨ï¼š%s, åŠ ç­é¤ï¼š%s, ç­è½¦ï¼š%s, åŠ ç­ç†ç”±ï¼š%s") % (cForm.data_68, cForm.data_70, cForm.data_89, cForm.data_90, cForm.data_73)
+    #´òÓ¡ÈÕÖ¾
+    print("Ò»¼ü¼Ó°à½Å±¾Ö´ĞĞÍê³É£¬ÇëµÇÂ¼ÍøÒ³²é¿´¾ßÌåĞÅÏ¢")
+    print("¼Ó°àĞÅÏ¢£º")
+    print("¼Ó°àÊ±¼ä£º%s %s") % (cForm.data_91, cForm.data_67)
+    print("ĞÕÃû£º%s, ²¿ÃÅ£º%s, ¼Ó°à²Í£º%s, °à³µ£º%s, ¼Ó°àÀíÓÉ£º%s") % (cForm.data_68, cForm.data_70, cForm.data_89, cForm.data_90, cForm.data_73)
     return 0
 
-    #Step9ï¼šå…³é—­è¿æ¥
+    #Step9£º¹Ø±ÕÁ¬½Ó
     cHttp.Close()
 
-#å‡½æ•°åç§°ï¼šReadFile
-#å‡½æ•°åŠŸèƒ½ï¼šè¯»å–é…ç½®æ–‡ä»¶
-#å‡½æ•°è¿”å›ï¼š0æˆåŠŸ 1æ‰“å¼€æ–‡ä»¶å¤±è´¥ 2è§£å¯†å¤±è´¥ 3å‚æ•°é”™è¯¯
-#å‡½æ•°å‚æ•°ï¼šcUserInfo     ï¼šç”¨æˆ·ä¿¡æ¯
-#å‡½æ•°å‚æ•°ï¼šcCfgFile      ï¼šé…ç½®æ–‡ä»¶ä¿¡æ¯
-#å‡½æ•°å‚æ•°ï¼šdes           ï¼šåŠ è§£å¯†ç±»
+#º¯ÊıÃû³Æ£ºReadFile
+#º¯Êı¹¦ÄÜ£º¶ÁÈ¡ÅäÖÃÎÄ¼ş
+#º¯Êı·µ»Ø£º0³É¹¦ 1´ò¿ªÎÄ¼şÊ§°Ü 2½âÃÜÊ§°Ü 3²ÎÊı´íÎó
+#º¯Êı²ÎÊı£ºcUserInfo     £ºÓÃ»§ĞÅÏ¢
+#º¯Êı²ÎÊı£ºcCfgFile      £ºÅäÖÃÎÄ¼şĞÅÏ¢
+#º¯Êı²ÎÊı£ºdes           £º¼Ó½âÃÜÀà
 def ReadFile(cUserInfo, cCfgFile,  des):
     FileText = cCfgFile.ReadTextFile()
     if None == FileText:
-        print ("æ‰“å¼€é…ç½®æ–‡ä»¶å¤±è´¥")
+        print ("´ò¿ªÅäÖÃÎÄ¼şÊ§°Ü")
         return 1
 
-    #æ•°æ®è§£å¯†
+    #Êı¾İ½âÃÜ
     DecryptData = des.DESDecode(FileText, cUserInfo.UserName)
-    #å»é™¤å°¾éƒ¨'\0'
+    #È¥³ıÎ²²¿'\0'
     DataLen = len(DecryptData)
     for i in range(DataLen, 0, -1):
         if '\0' != DecryptData[DataLen-1]:
@@ -629,7 +636,7 @@ def ReadFile(cUserInfo, cCfgFile,  des):
         DecryptData = DecryptData[:DataLen]
     Couple = DecryptData.split('-')
     if 5 > len(Couple):
-        print ("æ•°æ®è§£å¯†å¤±è´¥")
+        print ("Êı¾İ½âÃÜÊ§°Ü")
         return 2
     cUserInfo.UserName = Couple[0]
     cUserInfo.Password = Couple[1]
@@ -650,78 +657,78 @@ def ReadFile(cUserInfo, cCfgFile,  des):
 
     return 0
 
-#å‡½æ•°åç§°ï¼šChangeConfig
-#å‡½æ•°åŠŸèƒ½ï¼šä¿®æ”¹é…ç½®æ–‡ä»¶
-#å‡½æ•°è¿”å›ï¼šTrueæˆåŠŸï¼ŒFalseå¤±è´¥
-#å‡½æ•°å‚æ•°ï¼šcUserInfo		ï¼šç”¨æˆ·ä¿¡æ¯
-#å‡½æ•°å‚æ•°ï¼šbFirst			ï¼šæ˜¯å¦ç¬¬ä¸€æ¬¡å¡«å†™
-#å‡½æ•°å‚æ•°ï¼šbChangePsw		ï¼šæ˜¯å¦éœ€è¦ä¿®æ”¹å¯†ç 
-#å‡½æ•°å‚æ•°ï¼šbChangeCfg		ï¼šæ˜¯å¦éœ€è¦ä¿®æ”¹é…ç½®
+#º¯ÊıÃû³Æ£ºChangeConfig
+#º¯Êı¹¦ÄÜ£ºĞŞ¸ÄÅäÖÃÎÄ¼ş
+#º¯Êı·µ»Ø£ºTrue³É¹¦£¬FalseÊ§°Ü
+#º¯Êı²ÎÊı£ºcUserInfo		£ºÓÃ»§ĞÅÏ¢
+#º¯Êı²ÎÊı£ºbFirst			£ºÊÇ·ñµÚÒ»´ÎÌîĞ´
+#º¯Êı²ÎÊı£ºbChangePsw		£ºÊÇ·ñĞèÒªĞŞ¸ÄÃÜÂë
+#º¯Êı²ÎÊı£ºbChangeCfg		£ºÊÇ·ñĞèÒªĞŞ¸ÄÅäÖÃ
 def ChangeConfig(cUserInfo, bFirst, bChangePsw=False, bChangeCfg=False):
     if True == bFirst:
-        #æ£€æµ‹ç¨‹åºæˆæƒ
-        UserName = raw_input("è¯·è¾“å…¥ç”¨æˆ·å: ")
+        #¼ì²â³ÌĞòÊÚÈ¨
+        UserName = raw_input("ÇëÊäÈëÓÃ»§Ãû: ")
         if UserName != cUserInfo.UserName:
-            print ("ç”¨æˆ·åéªŒè¯å¤±è´¥")
+            print ("ÓÃ»§ÑéÖ¤Ê§°Ü£¬ÇëÓëÈí¼şÌá¹©ÕßÁªÏµ~")
             return False
-        #è¯·è¾“å…¥å¯†ç 
-        Password = raw_input("è¯·è¾“å…¥å¯†ç : ")
-        Password2 = raw_input("è¯·å†æ¬¡è¾“å…¥ï¼š ")
+        #ÇëÊäÈëÃÜÂë
+        Password = raw_input("ÇëÊäÈëÃÜÂë: ")
+        Password2 = raw_input("ÇëÔÙ´ÎÊäÈë£º ")
         if (Password != Password2):
-            print ("è¾“å…¥çš„ä¸¤æ¬¡å¯†ç ä¸åŒ")
+            print ("ÊäÈëµÄÁ½´ÎÃÜÂë²»Í¬")
             return False
-        #ä¿å­˜å¯†ç 
+        #±£´æÃÜÂë
         cUserInfo.Password = Password
-        #æ·»åŠ å‚æ•°
+        #Ìí¼Ó²ÎÊı
         bChangeCfg = True
 
     if True == bChangePsw:
-        #è¯·è¾“å…¥åŸå¯†ç 
-        Password = raw_input("è¯·è¾“å…¥åŸå¯†ç : ")
+        #ÇëÊäÈëÔ­ÃÜÂë
+        Password = raw_input("ÇëÊäÈëÔ­ÃÜÂë: ")
         if (Password != cUserInfo.Password):
-            print ("å¯†ç é”™è¯¯")
+            print ("ÃÜÂë´íÎó")
             return False
-        #è¯·è¾“å…¥æ–°å¯†ç 
-        Password = raw_input("è¯·è¾“å…¥æ–°å¯†ç : ")
-        Password2 = raw_input("è¯·å†æ¬¡è¾“å…¥ï¼š ")
+        #ÇëÊäÈëĞÂÃÜÂë
+        Password = raw_input("ÇëÊäÈëĞÂÃÜÂë: ")
+        Password2 = raw_input("ÇëÔÙ´ÎÊäÈë£º ")
         if (Password != Password2):
-            print ("è¾“å…¥çš„ä¸¤æ¬¡å¯†ç ä¸åŒ")
+            print ("ÊäÈëµÄÁ½´ÎÃÜÂë²»Í¬")
             return False
-        #ä¿å­˜å¯†ç 
+        #±£´æÃÜÂë
         cUserInfo.Password = Password
 
     if True == bChangeCfg:
-        #æ˜¯å¦éœ€è¦åŠ ç­é¤
-        Dinner = raw_input("æ˜¯å¦éœ€è¦åŠ ç­é¤(1æ˜¯2å¦): ")
+        #ÊÇ·ñĞèÒª¼Ó°à²Í
+        Dinner = raw_input("ÊÇ·ñĞèÒª¼Ó°à²Í(1ÊÇ2·ñ): ")
         if '1' == Dinner:
             cUserInfo.Dinner = 1
         elif '2' == Dinner:
             cUserInfo.Dinner = 0
         else:
-            print ("è¾“å…¥çš„å‚æ•°ä¸æ­£ç¡®")
+            print ("ÊäÈëµÄ²ÎÊı²»ÕıÈ·")
             return False
-        #æ˜¯å¦éœ€è¦åŠ ç­ç­è½¦
-        Bus = raw_input("æ˜¯å¦éœ€è¦åŠ ç­ç­è½¦(1æ˜¯2å¦): ")
+        #ÊÇ·ñĞèÒª¼Ó°à°à³µ
+        Bus = raw_input("ÊÇ·ñĞèÒª¼Ó°à°à³µ(1ÊÇ2·ñ): ")
         if '1' == Bus:
             cUserInfo.Bus = 1
         elif '2' == Bus:
             cUserInfo.Bus = 0
         else:
-            print ("è¾“å…¥çš„å‚æ•°ä¸æ­£ç¡®")
+            print ("ÊäÈëµÄ²ÎÊı²»ÕıÈ·")
             return False
-        #åŠ ç­ç†ç”±
-        cUserInfo.Reason = raw_input("åŠ ç­ç†ç”±: ")
+        #¼Ó°àÀíÓÉ
+        cUserInfo.Reason = raw_input("¼Ó°àÀíÓÉ: ")
 
-    print ("ä¿®æ”¹é…ç½®æˆåŠŸ")
+    print ("ĞŞ¸ÄÅäÖÃ³É¹¦")
     cUserInfo.bFileChange = True
     return True
 
-#å‡½æ•°åç§°ï¼šSaveFile
-#å‡½æ•°åŠŸèƒ½ï¼šä¿å­˜é…ç½®æ–‡ä»¶
-#å‡½æ•°è¿”å›ï¼šæ— 
-#å‡½æ•°å‚æ•°ï¼šcUserInfo     ï¼šç”¨æˆ·ä¿¡æ¯
-#å‡½æ•°å‚æ•°ï¼šcCfgFile      ï¼šé…ç½®æ–‡ä»¶ä¿¡æ¯
-#å‡½æ•°å‚æ•°ï¼šdes           ï¼šåŠ è§£å¯†ç±»
+#º¯ÊıÃû³Æ£ºSaveFile
+#º¯Êı¹¦ÄÜ£º±£´æÅäÖÃÎÄ¼ş
+#º¯Êı·µ»Ø£ºÎŞ
+#º¯Êı²ÎÊı£ºcUserInfo     £ºÓÃ»§ĞÅÏ¢
+#º¯Êı²ÎÊı£ºcCfgFile      £ºÅäÖÃÎÄ¼şĞÅÏ¢
+#º¯Êı²ÎÊı£ºdes           £º¼Ó½âÃÜÀà
 def SaveFile(cUserInfo, cCfgFile, des):
     if False == cUserInfo.bFileChange:
         return
@@ -729,7 +736,7 @@ def SaveFile(cUserInfo, cCfgFile, des):
     if None==cUserInfo.UserName or None==cUserInfo.Password or 0==len(cUserInfo.Reason):
         return
 
-    #ä¿å­˜åˆ°æ–‡ä»¶
+    #±£´æµ½ÎÄ¼ş
     Data = cUserInfo.UserName + '-' + cUserInfo.Password + '-'
     if cUserInfo.Dinner:
         Data += '1-'
@@ -744,96 +751,109 @@ def SaveFile(cUserInfo, cCfgFile, des):
 
     EncryptData = des.DESEncode(Data, cUserInfo.UserName)
     cCfgFile.WriteTextFile(EncryptData)
-    #é…ç½®å‚æ•°é‡æ–°ä¿®æ”¹ä¸ºFalse
+    #ÅäÖÃ²ÎÊıÖØĞÂĞŞ¸ÄÎªFalse
     cUserInfo.bFileChange = False
 
 if __name__ == "__main__":
-    #ç”¨æˆ·åå®šä¹‰
-    UserName = "é’±å˜‰æ¬¢"
-    #å‡½æ•°è¿”å›ç»“æœ
+    #ÓÃ»§Ãû¶¨Òå
+    UserName = "Ç®¼Î»¶"
+    #º¯Êı·µ»Ø½á¹û
     FuncResult = 0
-    #ç”¨æˆ·åŠ ç­ä¿¡æ¯
+    #ÓÃ»§¼Ó°àĞÅÏ¢
     cUserInfo = CUserInfo(UserName)
-    #é…ç½®æ–‡ä»¶
+    #ÅäÖÃÎÄ¼ş
     cCfgFile = CFileMng("./AddWork.cfg")
-    #åŠ è§£å¯†å·¥å…·
+    #¼Ó½âÃÜ¹¤¾ß
     des = CDesCode()
-    #æ•°æ®ç¼“å­˜
+    #Êı¾İ»º´æ
     szTemp = ""
 
     while True:
-        #è¯»å–æ–‡ä»¶
+        #¶ÁÈ¡ÎÄ¼ş
         FuncResult = ReadFile(cUserInfo, cCfgFile, des)
         if 0!=FuncResult or UserName!=cUserInfo.UserName:
-            ChangeConfig(cUserInfo, True)
+            if False == ChangeConfig(cUserInfo, True):
+				print ("°´ÈÎÒâ¼üÍË³ö...")
+				Result = raw_input()
+				break
             SaveFile(cUserInfo, cCfgFile, des)
 
-        #æ¸…å±
+        #ÇåÆÁ
         osClear = os.system("cls")
-        #æ‰“å°æ–‡ä»¶å¹¶è¯¢é—®
+        #´òÓ¡ÎÄ¼ş²¢Ñ¯ÎÊ
         print("\n*********************************************************")
-        print ("æ¬¢è¿ä½¿ç”¨æ­å·ä¸‰æ±‡ä¸€é”®åŠ ç­è„šæœ¬ï¼")
-        print ("å½“å‰ç”¨æˆ·å: %s\n") % UserName
-        print ("è¯·é€‰æ‹©ä»¥ä¸‹é€‰é¡¹ï¼š")
-        print ("1.æ‰§è¡Œä¸€é”®åŠ ç­ç¨‹åº")
-        print ("2.ä¿®æ”¹ç™»å½•å¯†ç (ä»…ä¿®æ”¹æœ¬åœ°å¯†ç ï¼Œä¸ä¿®æ”¹ç™»å½•æœåŠ¡å™¨æ‰€éœ€çš„å¯†ç ï¼)")
-        print ("3.æŸ¥çœ‹ç”¨æˆ·ä¿¡æ¯")
-        print ("4.ä¿®æ”¹åŠ ç­å‚æ•°")
-        print ("5.åˆ é™¤é…ç½®æ–‡ä»¶")
-        print ("6.é€€å‡ºç¨‹åº")
+        print ("»¶Ó­Ê¹ÓÃº¼ÖİÈı»ãÒ»¼ü¼Ó°à½Å±¾£¡")
+        print ("µ±Ç°ÓÃ»§Ãû: %s\n") % UserName
+        print ("ÇëÑ¡ÔñÒÔÏÂÑ¡Ïî£º")
+        print ("1.Ö´ĞĞÒ»¼ü¼Ó°à³ÌĞò")
+        print ("2.ĞŞ¸Ä±¾µØ±£´æÃÜÂë(²»ĞŞ¸ÄµÇÂ¼·şÎñÆ÷ËùĞèµÄÃÜÂë£¡)")
+        print ("3.²é¿´ÓÃ»§ĞÅÏ¢")
+        print ("4.ĞŞ¸Ä¼Ó°à²ÎÊı")
+        print ("5.É¾³ıÅäÖÃÎÄ¼ş")
+        print ("6.ÍË³ö³ÌĞò")
         print("*********************************************************")
-        #è¾“å…¥å‚æ•°
-        Input = input()
-        #æ ¹æ®é€‰æ‹©æ‰§è¡Œç›¸å…³ç¨‹åº
-        if 1 == Input:
-            #éªŒè¯å¯†ç 
-            Password = raw_input("è¯·è¾“å…¥æœ¬åœ°ä¿å­˜çš„å¯†ç : ")
+        #ÊäÈë²ÎÊı
+        Input = raw_input()
+        #¸ù¾İÑ¡ÔñÖ´ĞĞÏà¹Ø³ÌĞò
+        if '1' == Input:
+            #ÑéÖ¤ÃÜÂë
+            Password = raw_input("ÇëÊäÈë±¾µØ±£´æµÄÃÜÂë: ")
             if (Password != cUserInfo.Password):
-                print ("å¯†ç é”™è¯¯")
+                print ("ÃÜÂë´íÎó")
+                Result = raw_input()
                 continue
-            #æ‰§è¡ŒåŠ ç­ç¨‹åº,ä¸ç®¡æˆåŠŸä¸å¤±è´¥ï¼Œå‡ç›´æ¥ä¿å­˜é€€å‡º
+            #Ö´ĞĞ¼Ó°à³ÌĞò,²»¹Ü³É¹¦ÓëÊ§°Ü£¬¾ùÖ±½Ó±£´æÍË³ö
             AddWork(cUserInfo)
             SaveFile(cUserInfo, cCfgFile, des)
+            print ("°´ÈÎÒâ¼üÍË³ö...")
+            Result = raw_input()
             break
 
-        elif 2 == Input:
+        elif '2' == Input:
             ChangeConfig(cUserInfo, False, True, False)
             SaveFile(cUserInfo, cCfgFile, des)
-            continue
-
-        elif 3 == Input:
-            szTemp = "ç”¨æˆ·å: %s, " % cUserInfo.UserName
-            szTemp += "åŠ ç­é¤: "
-            szTemp += "æ˜¯, " if 1==cUserInfo.Dinner else "å¦, "
-            szTemp += "åŠ ç­ç­è½¦:"
-            szTemp += "æ˜¯, " if 1==cUserInfo.Bus else "å¦, "
-            szTemp += "åŠ ç­ç†ç”±: %s" % cUserInfo.Reason
-            print (szTemp)
-            print ("æŒ‰ä»»æ„é”®ç»§ç»­...")
             Result = raw_input()
             continue
 
-        elif 4 == Input:
-            #éªŒè¯å¯†ç 
-            Password = raw_input("è¯·è¾“å…¥æœ¬åœ°ä¿å­˜çš„å¯†ç : ")
+        elif '3' == Input:
+            szTemp = "ÓÃ»§Ãû: %s, " % cUserInfo.UserName
+            szTemp += "¼Ó°à²Í: "
+            szTemp += "ÊÇ, " if 1==cUserInfo.Dinner else "·ñ, "
+            szTemp += "¼Ó°à°à³µ:"
+            szTemp += "ÊÇ, " if 1==cUserInfo.Bus else "·ñ, "
+            szTemp += "¼Ó°àÀíÓÉ: %s" % cUserInfo.Reason
+            print (szTemp)
+            Result = raw_input()
+            continue
+
+        elif '4' == Input:
+            #ÑéÖ¤ÃÜÂë
+            Password = raw_input("ÇëÊäÈë±¾µØ±£´æµÄÃÜÂë: ")
             if (Password != cUserInfo.Password):
-                print ("å¯†ç é”™è¯¯")
+                print ("ÃÜÂë´íÎó")
                 continue
             ChangeConfig(cUserInfo, False, False, True)
             SaveFile(cUserInfo, cCfgFile, des)
+            Result = raw_input()
             continue
 
-        elif 5 == Input:
-            #éªŒè¯å¯†ç 
-            Password = raw_input("è¯·è¾“å…¥æœ¬åœ°ä¿å­˜çš„å¯†ç : ")
+        elif '5' == Input:
+            #ÑéÖ¤ÃÜÂë
+            Password = raw_input("ÇëÊäÈë±¾µØ±£´æµÄÃÜÂë: ")
             if (Password != cUserInfo.Password):
-                print ("å¯†ç é”™è¯¯")
+                print ("ÃÜÂë´íÎó")
                 continue
             cCfgFile.DelTextFile()
-            print ("åˆ é™¤é…ç½®æ–‡ä»¶æˆåŠŸ")
+            print ("É¾³ıÅäÖÃÎÄ¼ş³É¹¦")
+            Result = raw_input()
             continue
 
-        elif 6 == Input:
-            print ("æŒ‰ä»»æ„é”®é€€å‡º...")
+        elif '6' == Input:
+            print ("°´ÈÎÒâ¼üÍË³ö...")
             Result = raw_input()
             break
+        
+        else:
+            print ("²ÎÊıÎŞĞ§")
+            Result = raw_input()
+            continue

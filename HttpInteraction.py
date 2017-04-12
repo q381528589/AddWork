@@ -5,6 +5,7 @@ from io import StringIO
 import gzip
 import re
 import random, string
+import logging
 
 #Cookie类
 class CCookie:
@@ -138,16 +139,16 @@ class CHttp:
     def Send(self, Method, ReqUrl, ReqBody=None):
         #检测数据有效性
         if None==Method or None==ReqUrl:
-            print ("发送HTTP请求时，请求类型或Url无效")
+            logging.error("发送HTTP请求时，请求类型或Url无效")
             return False
         if 0 == len(self.__ReqHead):
-            print ("发送HTTP请求时，请求头部没有任何数据")
+            logging.error("发送HTTP请求时，请求头部没有任何数据")
             return False
         #拷贝并打印数据
         self.__Method = Method
         self.__ReqUrl = ReqUrl
         self.__ReqBody = ReqBody
-        print ("%s %s HTTP/1.1" % (Method, ReqUrl))
+        logging.info("%s %s HTTP/1.1" % (Method, ReqUrl))
         #拷贝cookie字段到ReqHead
         if None!=self.__cCookie.CookieBuffer:
             self.SetReqHead("Cookie", self.__cCookie.CookieBuffer)
@@ -159,7 +160,7 @@ class CHttp:
             if "GET" == Method:
                 self.__Connect.request(method=Method, url=ReqUrl, headers=self.__ReqHead)
         except:
-            print ("发送HTTP请求数据失败")
+            logging.error("发送HTTP请求数据失败")
             return False
 
         return True;
@@ -174,7 +175,7 @@ class CHttp:
         try:
             self.__Response = self.__Connect.getresponse()
         except:
-            print ("接收HTTP响应失败")
+            logging.error("接收HTTP响应失败")
             return 0, None, None
         self.__AckCode = self.__Response.status
         self.__AckHead = self.__Response.getheaders()
@@ -267,12 +268,12 @@ class CRegex:
         RegexResult = re.search(Regex, Data, re.M|re.I)
         if None == RegexResult:
             if True == bPrintError:
-                print ("正则表达式错误或者没有匹配到数据")
+                logging.error("正则表达式错误或者没有匹配到数据")
             return None
 
         if None == RegexResult.group(Position):
             if True == bPrintError:
-                print ("输入的提取位置与正则表达式不符")
+                logging.error("输入的提取位置与正则表达式不符")
             return None
 
         return RegexResult.group(Position)

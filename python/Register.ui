@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CRegister</class>
+ <widget class="QDialog" name="CRegister">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>262</width>
+    <height>288</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>注册</string>
+  </property>
+  <widget class="QLabel" name="Label_User">
+   <property name="geometry">
+    <rect>
+     <x>21</x>
+     <y>18</y>
+     <width>64</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Agency FB</family>
+     <pointsize>9</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>用户名：</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="Lablel_Psw1">
+   <property name="geometry">
+    <rect>
+     <x>21</x>
+     <y>50</y>
+     <width>48</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Agency FB</family>
+     <pointsize>9</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>密码：</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="Label_Psw2">
+   <property name="geometry">
+    <rect>
+     <x>21</x>
+     <y>82</y>
+     <width>80</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Agency FB</family>
+     <pointsize>9</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>确认密码：</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="Label_Dinner">
+   <property name="geometry">
+    <rect>
+     <x>21</x>
+     <y>146</y>
+     <width>64</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Agency FB</family>
+     <pointsize>9</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>加班餐：</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="Label_Bus">
+   <property name="geometry">
+    <rect>
+     <x>21</x>
+     <y>178</y>
+     <width>80</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Agency FB</family>
+     <pointsize>9</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>加班班车：</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="Text_User">
+   <property name="geometry">
+    <rect>
+     <x>107</x>
+     <y>18</y>
+     <width>133</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Agency FB</family>
+     <pointsize>9</pointsize>
+    </font>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="Text_Psw1">
+   <property name="geometry">
+    <rect>
+     <x>107</x>
+     <y>50</y>
+     <width>133</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Agency FB</family>
+     <pointsize>9</pointsize>
+    </font>
+   </property>
+   <property name="echoMode">
+    <enum>QLineEdit::Password</enum>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="Text_Psw2">
+   <property name="geometry">
+    <rect>
+     <x>107</x>
+     <y>82</y>
+     <width>133</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Agency FB</family>
+     <pointsize>9</pointsize>
+    </font>
+   </property>
+   <property name="echoMode">
+    <enum>QLineEdit::Password</enum>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="Combo_Dinner">
+   <property name="geometry">
+    <rect>
+     <x>107</x>
+     <y>146</y>
+     <width>131</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Agency FB</family>
+     <pointsize>9</pointsize>
+    </font>
+   </property>
+   <item>
+    <property name="text">
+     <string>是</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>否</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="QComboBox" name="Combo_Bus">
+   <property name="geometry">
+    <rect>
+     <x>107</x>
+     <y>178</y>
+     <width>131</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Agency FB</family>
+     <pointsize>9</pointsize>
+    </font>
+   </property>
+   <item>
+    <property name="text">
+     <string>是</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>否</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="QLineEdit" name="Text_Reason">
+   <property name="geometry">
+    <rect>
+     <x>107</x>
+     <y>210</y>
+     <width>133</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Agency FB</family>
+     <pointsize>9</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>加班</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="Btn_Regist">
+   <property name="geometry">
+    <rect>
+     <x>165</x>
+     <y>242</y>
+     <width>75</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Agency FB</family>
+     <pointsize>9</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>注册</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="Text_RegCode">
+   <property name="geometry">
+    <rect>
+     <x>107</x>
+     <y>114</y>
+     <width>133</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Agency FB</family>
+     <pointsize>9</pointsize>
+    </font>
+   </property>
+  </widget>
+  <widget class="QLabel" name="Label_RegCode">
+   <property name="geometry">
+    <rect>
+     <x>21</x>
+     <y>114</y>
+     <width>48</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Agency FB</family>
+     <pointsize>9</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>注册码</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="Label_Reason">
+   <property name="geometry">
+    <rect>
+     <x>21</x>
+     <y>210</y>
+     <width>80</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Agency FB</family>
+     <pointsize>9</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>加班理由：</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="Label_Status">
+   <property name="geometry">
+    <rect>
+     <x>21</x>
+     <y>242</y>
+     <width>131</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Agency FB</family>
+     <pointsize>9</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+ </widget>
+ <tabstops>
+  <tabstop>Text_User</tabstop>
+  <tabstop>Text_Psw1</tabstop>
+  <tabstop>Text_Psw2</tabstop>
+  <tabstop>Text_RegCode</tabstop>
+  <tabstop>Combo_Dinner</tabstop>
+  <tabstop>Combo_Bus</tabstop>
+  <tabstop>Text_Reason</tabstop>
+  <tabstop>Btn_Regist</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>

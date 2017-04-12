@@ -4,6 +4,7 @@ import os
 import hashlib
 from HttpInteraction import CHttp, CUnzip
 import urllib, base64
+import logging
 
 #配置文件类
 class CConfig:
@@ -43,12 +44,12 @@ class CConfig:
     def ReadFile(self):
         FileText = self._cCfgFile.ReadTextFile()
         if None == FileText:
-            print ("打开配置文件失败")
+            logging.error("打开配置文件失败")
             return 1
         #分割字串
         EncryptData = FileText.split(' ')
         if (3 > len(EncryptData)):
-            print ("数据解密失败:文件内容未找到有效分割点")
+            logging.error("数据解密失败:文件内容未找到有效分割点")
             return 2
         #读取用户名的MD5
         UserMD5 = EncryptData[0]
@@ -57,16 +58,16 @@ class CConfig:
         try:
             DecryptData = self._cDes.Decrypt(EncryptData[1], UserMD5)
             if (None == DecryptData):
-                print ("数据解密失败：导入的MD5值不正确")
+                logging.error("数据解密失败：导入的MD5值不正确")
                 return 2
         except:
-            print ("数据解密失败：未知原因")
+            logging.error("数据解密失败：未知原因")
             return 2           
         
         #对解密后的数据进行分割
         Couple = DecryptData.split('-')
         if 5 > len(Couple):
-            print ("数据解密失败：解密后的数据不符合要求")
+            logging.error("数据解密失败：解密后的数据不符合要求")
             return 2
         self.UserName = Couple[0]
         self.Password = Couple[1]
@@ -87,7 +88,7 @@ class CConfig:
         #验证用户名
         Md5Value = self.CalcMD5(self.UserName)
         if (Md5Value != EncryptData[0]):
-            print ("数据解密失败：MD5值校验不通过")
+            logging.error("数据解密失败：MD5值校验不通过")
             return 3
         
         #是否跳过登录
@@ -124,10 +125,10 @@ class CConfig:
         try:    
             EncryptData = self._cDes.Encrypt(Data, Md5Value)
             if (None == EncryptData):
-                print ("数据解密失败：导入的MD5值不正确")
+                logging.error("数据解密失败：导入的MD5值不正确")
                 return 2
         except:
-            print ("数据解密失败：未知原因")
+            logging.error("数据解密失败：未知原因")
             return 2
         
         #跳过密码字段
@@ -175,7 +176,7 @@ class CConfig:
         #登录的交互过程
         cHttp.Connect()
         ReqBody = urllib.parse.urlencode({'UNAME': UserName, 'PASSWORD': Password, 'encode_type': 1})
-        if False == cHttp.Send("POST", "/logincheck.php", ReqBody):
+        if (False == cHttp.Send("POST", "/logincheck.php", ReqBody)):
             cHttp.Close()
             return 2
         AckCode, AckHead, AckBody = cHttp.Receive()

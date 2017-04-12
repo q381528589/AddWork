@@ -1,859 +1,303 @@
 # -*- coding: utf-8 -*-
 
-############################################
-#Èı»ãÒ»¼ü¼Ó°àÏµÍ³
-#ºóÆÚĞèÒª¸Ä½øÊÂÏî£º¡£
-#1.µÚÒ»´ÎÌí¼ÓÃÜÂë£¬ºóÆÚĞŞ¸ÄÃÜÂëÊ±Ô¶³ÌÑéÖ¤
-#2.Ìí¼ÓĞŞ¸ÄÃÜÂë¹¦ÄÜ£¨ĞŞ¸Ä·şÎñÆ÷µÄÃÜÂë£©
-#3.¿ÉÊÓ»¯½çÃæÔ¤ÑĞ
-############################################
+import sys
+from PyQt5 import QtWidgets
+from AddWorkUI import *
+from Login import CLogin
+from Register import CRegister
+import base64, urllib, time
+from HttpInteraction import CHttp, CForm, CRegex, CMIME
 
-import httplib, urllib
-import StringIO, gzip
-import re
-import random, string
-import base64
-import time
-import os
-from DESCode import *
-from ConfigFileIO import *
-
-#CookieÀà
-class CCookie:
-    __PhpSessionId = None
-    __UserNameCookie = None
-    __OAUserId=None
-    __SID=None
-    __CreakWork="new"
-    CookieBuffer = None
-
-    #º¯ÊıÃû³Æ£ºCCookie::__init__
-    #º¯Êı¹¦ÄÜ£º¹¹Ôìº¯Êı
-    #º¯Êı·µ»Ø£ºÎŞ
-    #º¯Êı²ÎÊı£ºÎŞ
-    def __init__(self):
-        pass
-
-    #º¯ÊıÃû³Æ£ºCCookie::SetCookie
-    #º¯Êı¹¦ÄÜ£º½«ÇëÇóSet-Cookie×Ö¶ÎËùĞèÒªµÄCookieÌîÈëÏàÓ¦×Ö¶Î
-    #º¯Êı·µ»Ø£ºÎŞ
-    #º¯Êı²ÎÊı£ºCookies   £ºCookie¼¯ºÏ
-    def SetCookie(self, Cookies):
-        if (None == Cookies):
-            return
-        #·Ö¸î×Ö¶Î
-        SetCookieList = Cookies.split(', ')
-        for SetCookie in SetCookieList:
-            CookieList = SetCookie.split('; ')
-            for Cookie in CookieList:
-                FieldList = Cookie.split('=')
-                if ("PHPSESSID" == FieldList[0]):
-                    self.__PhpSessionId = FieldList[1]
-                elif ("USER_NAME_COOKIE" == FieldList[0]):
-                    self.__UserNameCookie = FieldList[1]
-                elif ("OA_USER_ID" == FieldList[0]):
-                    self.__OAUserId = FieldList[1]
-                elif (-1 != FieldList[0].find("SID_")):
-                    self.__SID = FieldList[1]
-        #×é×°Cookies
-        self.__Assemble()
-
-    #º¯ÊıÃû³Æ£ºCCookie::__Assemble
-    #º¯Êı¹¦ÄÜ£º×é×°Cookie³É×Ö·û´®
-    #º¯Êı·µ»Ø£º×é×°ºóµÄ×Ö·û´®
-    #º¯Êı²ÎÊı£ºÎŞ
-    def __Assemble(self):
-        #³õÊ¼»¯Cookie»º´æ
-        self.CookieBuffer = ""
-        #ÒÀ´ÎÌí¼ÓCookieÖµ
-        if None!=self.__PhpSessionId:
-            self.CookieBuffer = self.CookieBuffer + "PHPSESSID=" + self.__PhpSessionId + "; "
-        if None!=self.__UserNameCookie:
-            self.CookieBuffer = self.CookieBuffer + "USER_NAME_COOKIE=" + self.__UserNameCookie + "; "
-        if None!=self.__OAUserId:
-            self.CookieBuffer = self.CookieBuffer + "OA_USER_ID=" + self.__OAUserId + "; "
-        if None!=self.__OAUserId and None!=self.__SID:
-            self.CookieBuffer = self.CookieBuffer + "SID_" + self.__OAUserId + "=" + self.__SID + "; "
-        self.CookieBuffer = self.CookieBuffer + "creat_work=" + self.__CreakWork
-
-        return self.CookieBuffer
-
-#HTTPÊı¾İÊÕ·¢Àà
-class CHttp:
-    #Á¬½Ó·ûºÅ
-    __Connect = None
-    #ÇëÇóÀàĞÍ
-    __Method = ""
-    #ÇëÇóUrl
-    __ReqUrl = ""
-    #ÇëÇóÍ·²¿
-    __ReqHead = {}
-    #ÇëÇóCookie
-    __cCookie = CCookie()
-    #ÇëÇóBody
-    __ReqBody = ""
-    #ÏìÓ¦
-    __Response = ""
-    #ÏìÓ¦Âë
-    __AckCode = 200
-    #ÏìÓ¦Í·²¿
-    __AckHead = []
-    #ÏìÓ¦Êı¾İ
-    __AckBody = ""
-
-    #º¯ÊıÃû³Æ£ºCHttp::__init__
-    #º¯Êı¹¦ÄÜ£º¹¹Ôìº¯Êı
-    #º¯Êı·µ»Ø£ºÎŞ
-    #º¯Êı²ÎÊı£ºÎŞ
-    def __init__(self):
-        self.__ReqHead = {"Host":"do.sanhuid.com"
-            , "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
-            , "Origin":"http://do.sanhuid.com"
-            , "Upgrade-Insecure-Requests":"1"
-            , "User-Agent":"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 UBrowser/5.7.15319.202 Safari/537.36"
-            , "Content-Type":"application/x-www-form-urlencoded"
-            , "Accept-Encoding":"gzip, deflate"
-            , "Accept-Language":"zh-CN,zh;q=0.8"}
-
-    #º¯ÊıÃû³Æ£ºCHttp::SetReqHead
-    #º¯Êı¹¦ÄÜ£ºÌí¼Ó/ĞŞ¸ÄÇëÇóÍ·²¿Êı¾İ
-    #º¯Êı·µ»Ø£ºÎŞ
-    #º¯Êı²ÎÊı£ºKey       £º×ÖµäKey£¬×Ö¶ÎÀàĞÍ
-    #º¯Êı²ÎÊı£ºValue     £º×ÖµäValue£¬×Ö¶Î²ÎÊı
-    def SetReqHead(self, Key, Value):
-        self.__ReqHead.setdefault(Key, Value)
-
-    #º¯ÊıÃû³Æ£ºCHttp::DelReqHead
-    #º¯Êı¹¦ÄÜ£ºÉ¾³ıÇëÇóÍ·²¿Êı¾İ
-    #º¯Êı·µ»Ø£ºÎŞ
-    #º¯Êı²ÎÊı£ºKey       £º×ÖµäKey£¬×Ö¶ÎÀàĞÍ
-    def DelReqHead(self, Key):
-        del self.__ReqHead[Key]
-
-    #º¯ÊıÃû³Æ£ºCHttp::Connect
-    #º¯Êı¹¦ÄÜ£ºÁ¬½Ó·şÎñÆ÷
-    #º¯Êı·µ»Ø£ºTrue³É¹¦£¬FalseÊ§°Ü
-    #º¯Êı²ÎÊı£ºIpAddr    £º·şÎñÆ÷IPµØÖ·
-    #º¯Êı²ÎÊı£ºPort      £º·şÎñÆ÷¶Ë¿Ú£¬Ä¬ÈÏÎª80
-    def Connect(self, IpAddr, Port=80):
-        self.__Connect = httplib.HTTPConnection(IpAddr, Port)
-
-    #º¯ÊıÃû³Æ£ºCHttp::Send
-    #º¯Êı¹¦ÄÜ£º·¢ËÍHTTPÇëÇó
-    #º¯Êı·µ»Ø£ºTrue³É¹¦£¬FalseÊ§°Ü
-    #º¯Êı²ÎÊı£ºMethod    £ºÇëÇóÀàĞÍ
-    #º¯Êı²ÎÊı£ºReqUrl    £ºÇëÇóURL
-    #º¯Êı²ÎÊı£ºReqBody   £ºÇëÇóÌå
-    def Send(self, Method, ReqUrl, ReqBody=None):
-        #¼ì²âÊı¾İÓĞĞ§ĞÔ
-        if None==Method or None==ReqUrl:
-            print ("·¢ËÍHTTPÇëÇóÊ±£¬ÇëÇóÀàĞÍ»òUrlÎŞĞ§")
-            return False
-        if 0 == len(self.__ReqHead):
-            print ("·¢ËÍHTTPÇëÇóÊ±£¬ÇëÇóÍ·²¿Ã»ÓĞÈÎºÎÊı¾İ")
-            return False
-        #¿½±´²¢´òÓ¡Êı¾İ
-        self.__Method = Method
-        self.__ReqUrl = ReqUrl
-        self.__ReqBody = ReqBody
-        print ("%s %s HTTP/1.1") % (Method, ReqUrl)
-        #¿½±´cookie×Ö¶Îµ½ReqHead
-        if None!=self.__cCookie.CookieBuffer:
-            self.SetReqHead("Cookie", self.__cCookie.CookieBuffer)
-
-        #¸ù¾İ²»Í¬ÀàĞÍ·¢ËÍÇëÇóÊı¾İ
-        try:
-            if "POST" == Method:
-                self.__Connect.request(method=Method, url=ReqUrl,body=ReqBody, headers=self.__ReqHead)
-            if "GET" == Method:
-                self.__Connect.request(method=Method, url=ReqUrl, headers=self.__ReqHead)
-        except:
-            print ("·¢ËÍHTTPÇëÇóÊı¾İÊ§°Ü")
-            return False
-
-        return True;
-
-    #º¯ÊıÃû³Æ£ºCHttp::Receive
-    #º¯Êı¹¦ÄÜ£º½ÓÊÕHTTPÏìÓ¦
-    #º¯Êı·µ»Ø£ºAckCode   £ºÏìÓ¦Âë£¬´íÎó·µ»Ø0
-    #º¯Êı·µ»Ø£ºAckHead   £ºÏìÓ¦Í·²¿£¬´íÎó·µ»ØNone
-    #º¯Êı·µ»Ø£ºAckBody   £ºÏìÓ¦Ìå£¬´íÎó·µ»ØNone
-    #º¯Êı²ÎÊı£ºÎŞ
-    def Receive(self):
-        try:
-            self.__Response = self.__Connect.getresponse()
-        except:
-            print ("½ÓÊÕHTTPÏìÓ¦Ê§°Ü")
-            return 0, None, None
-        self.__AckCode = self.__Response.status
-        self.__AckHead = self.__Response.getheaders()
-        self.__cCookie.SetCookie(self.__Response.getheader("set-cookie"))
-        self.__AckBody = self.__Response.read()
-        return self.__AckCode, self.__AckHead, self.__AckBody
+class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
+    _translate = QtCore.QCoreApplication.translate
+    _cConfig = None
     
-    #º¯ÊıÃû³Æ£ºCHttp::Close
-    #º¯Êı¹¦ÄÜ£º¹Ø±ÕHttpÁ¬½Ó
-    #º¯Êı·µ»Ø£ºÎŞ
-    #º¯Êı²ÎÊı£ºÎŞ
+    _cLogin = None
+    _cRegister = None
+    
+    def __init__(self, cConfig, bReadFile):
+        super(CAddWork, self).__init__()
+        self.setupUi(self)
+        self.Btn_Exit.clicked.connect(self.Exit)
+        self.Btn_AddWork.clicked.connect(self.AddWork)
+        self.Btn_ChgPsw.clicked.connect(self.ChangePsw)
+        
+        self._cConfig = cConfig
+        if (True == bReadFile):
+            self._ReadConfig(cConfig)
+        self._cLogin = CLogin(cConfig)
+        self._cRegister = CRegister(cConfig)
+        
+        #æ ¹æ®å…·ä½“æƒ…å†µå†³å®šæ˜¯å¦æ˜¾ç¤ºç•Œé¢
+        if (False == bReadFile):
+            #åˆ°æ³¨å†Œç•Œé¢
+            self.hide()
+            self._cRegister.Show(self)
+        elif (False == cConfig.bSkip):
+            #åˆ°ç™»å½•ç•Œé¢
+            self.hide()
+            self._cLogin.Show(self, self._cConfig)
+        else:
+            #æ˜¾ç¤ºè‡ªå·±
+            self.Show(self._cConfig)
+    
+    def Show(self, cConfig):
+        if (None != cConfig):
+            self._cConfig = cConfig
+            self._ReadConfig(cConfig)
+        self.show()
+        
     def Close(self):
-        self.__Connect.close()
-
-#½âÑ¹Àà
-class CUnzip:
-    __gziper = ""
-
-    #º¯ÊıÃû³Æ£ºCUnzip::__init__
-    #º¯Êı¹¦ÄÜ£º¹¹Ôìº¯Êı
-    #º¯Êı·µ»Ø£ºÎŞ
-    #º¯Êı²ÎÊı£ºÎŞ
-    def __init__(self):
-        pass
-
-    #º¯ÊıÃû³Æ£ºCCookie::Decompress
-    #º¯Êı¹¦ÄÜ£º½âÑ¹gzipÊı¾İ
-    #º¯Êı·µ»Ø£º½âÑ¹ºóÊı¾İ
-    #º¯Êı²ÎÊı£ºSrcData       £º½âÑ¹Ç°Êı¾İ
-    def Decompress(self, SrcData):
-        compressedstream = StringIO.StringIO(SrcData)
-        __gziper = gzip.GzipFile(fileobj=compressedstream)
-        #¶ÁÈ¡½âÑ¹ËõºóÊı¾İ
-        DstData = __gziper.read()
-        return DstData
-
-#±íµ¥Àà
-class CForm:
-    run_name_old = ""
-    run_id = ""
-    run_name = ""
-    flow_id = "131"
-    prcs_id = ""
-    flow_prcs = ""
-    prcs_key_id=""
-    #Ê±¼ä£ºÊ±·ÖÃë
-    data_67 = ""
-    #ĞÕÃû
-    data_68 = ""
-    #²¿ÃÅ
-    data_70 = ""
-    #¼Ó°àÀíÓÉ
-    data_73 = ""
-    #¼Ó°à²Í
-    data_89 = "ÊÇ"
-    #°à³µ
-    data_90 = "·ñ"
-    #ÈÕÆÚ£ºÄêÔÂÈÕ
-    data_91 = ""
-
-    #º¯ÊıÃû³Æ£ºCForm::__init__
-    #º¯Êı¹¦ÄÜ£º¹¹Ôìº¯Êı
-    #º¯Êı·µ»Ø£ºÎŞ
-    #º¯Êı²ÎÊı£ºÎŞ
-    def __init__(self):
-        pass
-
-#ÕıÔòÆ¥ÅäÀà
-class CRegex:
-    #º¯ÊıÃû³Æ£ºCRegex::__init__
-    #º¯Êı¹¦ÄÜ£º¹¹Ôìº¯Êı
-    #º¯Êı·µ»Ø£ºÎŞ
-    #º¯Êı²ÎÊı£ºÎŞ
-    def __init__(self):
-        pass
-
-    #º¯ÊıÃû³Æ£ºCRegex::Match
-    #º¯Êı¹¦ÄÜ£ºÕıÔò±í´ïÊ½Æ¥Åä
-    #º¯Êı·µ»Ø£ºÆ¥Åäµ½µÄÊı¾İ
-    #º¯Êı²ÎÊı£ºRegex        £ºÕıÔò±í´ïÊ½
-    #º¯Êı²ÎÊı£ºData         £ºÔ­Ê¼Êı¾İ
-    #º¯Êı²ÎÊı£ºPosition     £ºÌáÈ¡Î»ÖÃ
-    #º¯Êı²ÎÊı£ºbPrintError  £ºÊÇ·ñ´òÓ¡´íÎóĞÅÏ¢
-    def Match(self, Regex, Data, Position, bPrintError=True):
-        RegexResult = re.search(Regex, Data, re.M|re.I)
-        if None == RegexResult:
-            if True == bPrintError:
-                print ("ÕıÔò±í´ïÊ½´íÎó»òÕßÃ»ÓĞÆ¥Åäµ½Êı¾İ")
-            return None
-
-        if None == RegexResult.group(Position):
-            if True == bPrintError:
-                print ("ÊäÈëµÄÌáÈ¡Î»ÖÃÓëÕıÔò±í´ïÊ½²»·û")
-            return None
-
-        return RegexResult.group(Position)
-
-#MIMEÀà
-class CMIME:
-    boundary = "----WebKitFormBoundary"
-    __CharList = []
-    __Buffer = ""
-
-    #º¯ÊıÃû³Æ£ºCMIME::__init__
-    #º¯Êı¹¦ÄÜ£º¹¹Ôìº¯Êı
-    #º¯Êı·µ»Ø£ºÎŞ
-    #º¯Êı²ÎÊı£ºÎŞ
-    def __init__(self):
-        self.__CharList += random.sample('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', 16)
-        self.boundary += string.join(self.__CharList).replace(' ', "")
-
-    #º¯ÊıÃû³Æ£ºCMIME::AssembleMimeData
-    #º¯Êı¹¦ÄÜ£º×é×°MIMEÊı¾İ
-    #º¯Êı·µ»Ø£º×é×°ºÃµÄ×Ö·û´®
-    #º¯Êı²ÎÊı£ºbAgain    £ºÊÇ·ñÎªµÚ¶ş´Î·¢ËÍ
-    #º¯Êı²ÎÊı£ºcForm     £º±íµ¥Êı¾İ
-    def AssembleMimeData(self, bAgain, cForm):
-        if False == bAgain:
-            self.__AddMimeData("PRCS_TO", False, None, False)
-        else:
-            self.__AddMimeData("PRCS_TO", False, "0,", False)
-        self.__AddMimeData("webtype", False, "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 UBrowser/5.7.15319.202 Safari/537.36", False)
-        self.__AddMimeData("PRCS_CHOOSE", False, None, False)
-        self.__AddMimeData("RUN_PRCS_NAME", False, None, False)
-        if False == bAgain:
-            self.__AddMimeData("next_prcs_num", False, None, False)
-        else:
-            self.__AddMimeData("next_prcs_num", False, "0", False)
-
-        if False == bAgain:
-            self.__AddMimeData("info_str", False, None, False)
-        else:
-            self.__AddMimeData("info_str", False, "0,0,0,1,0,0,0,0,0,", False)
-        self.__AddMimeData("Symbol", False, "0", False)
-        self.__AddMimeData("run_name_old", False, cForm.run_name_old, False)
-        self.__AddMimeData("target", False, "parent", False)
-        self.__AddMimeData("callback", False, "turnCallback", False)
-        if False == bAgain:
-            self.__AddMimeData("SAVE_FLAG", False, "t", False)
-        else:
-            self.__AddMimeData("SAVE_FLAG", False, "tok", False)
-        self.__AddMimeData("FLOW_TYPE", False, "1", False)
-        self.__AddMimeData("EDIT_MODE", False, None, False)
-        self.__AddMimeData("RUN_ID", False, "%s" % cForm.run_id, False)
-        self.__AddMimeData("RUN_NAME", False, "%s" % cForm.run_name, False)
-        self.__AddMimeData("FLOW_ID", False, "%s" % cForm.flow_id, False)
-        self.__AddMimeData("PRCS_ID", False, "%s" % cForm.prcs_id, False)
-        self.__AddMimeData("FLOW_PRCS", False, "%s" % cForm.flow_prcs, False)
-        self.__AddMimeData("ITEM_ID_MAX", False, None, False)
-        self.__AddMimeData("MENU_FLAG", False, None, False)
-        self.__AddMimeData("HIDDEN_STR", False, None, False)
-        self.__AddMimeData("READ_ONLY_STR", False, None, False)
-        self.__AddMimeData("TOP_FLAG_OLD", False, "0", False)
-        self.__AddMimeData("BACK_CONTENT", False, None, False)
-        self.__AddMimeData("FLOW_PRCS_LAST", False, None, False)
-        self.__AddMimeData("PRCS_KEY_ID", False, "%s" % cForm.prcs_key_id, False)
-        self.__AddMimeData("work_level", False, "0", False)
-        self.__AddMimeData("work_level_old", False, "0", False)
-        self.__AddMimeData("getdata_search", False, None, False)
-        self.__AddMimeData("sign_object", False, "0", False)
-        self.__AddMimeData("onekey_next_flag", False, "0", False)
-        self.__AddMimeData("DATA_67", False, "%s" % cForm.data_67, False)
-        self.__AddMimeData("DATA_68", False, "%s" % cForm.data_68, False)
-        self.__AddMimeData("DATA_70", False, "%s" % cForm.data_70, False)
-        self.__AddMimeData("DATA_91", False, "%s" % cForm.data_91, False)
-        self.__AddMimeData("DATA_89", False, "%s" % cForm.data_89, False)
-        self.__AddMimeData("DATA_90", False, "%s" % cForm.data_90, False)
-        self.__AddMimeData("DATA_73", False, "%s" % cForm.data_73, False)
-        self.__AddMimeData("FLOW_AUTO_NUM", False, "0", False)
-        self.__AddMimeData("ATTACHMENT_0", True, None, False)
-        self.__AddMimeData("ATTACH_NAME", False, None, False)
-        self.__AddMimeData("ATTACH_DIR", False, None, False)
-        self.__AddMimeData("DISK_ID", False, None, False)
-        self.__AddMimeData("ATTACH_PRIV", False, "1", False)
-        self.__AddMimeData("ATTACHMENT_ID_OLD", False, None, False)
-        self.__AddMimeData("ATTACHMENT_NAME_OLD", False, None, False)
-        self.__AddMimeData("NEW_TYPE", False, "doc", False)
-        self.__AddMimeData("NEW_NAME", False, None, False)
-        self.__AddMimeData("TD_HTML_EDITOR_CONTENT", False, None, False)
-        self.__AddMimeData("ATTACHMENT1_0", True, None, False)
-        self.__AddMimeData("ATTACH_NAME1", False, None, False)
-        self.__AddMimeData("ATTACH_DIR1", False, None, False)
-        self.__AddMimeData("DISK_ID1", False, None, False)
-        self.__AddMimeData("SIGN_DATA", False, None, False)
-        if True == bAgain:
-            self.__AddMimeData("SMS_CONTENT", False, "¹¤×÷ÒÑ½áÊø£¬Á÷Ë®ºÅ£º%s£¬¹¤×÷Ãû³Æ/ÎÄºÅ£º%s" % (cForm.run_id, cForm.run_name), False)
-            self.__AddMimeData("remind_others_id", False, None, False)
-        #Êı¾İ½áÊø
-        self.__AddMimeData(None, False, None, True)
-        #×ªÂë³ÉGBK·¢ËÍ
-        return self.__Buffer
-
-    #º¯ÊıÃû³Æ£ºCMIME::__AddMimeData
-    #º¯Êı¹¦ÄÜ£º×é×°µ¥¸öMIMEÊı¾İ
-    #º¯Êı·µ»Ø£ºÎŞ
-    #º¯Êı²ÎÊı£ºname      £ºContentÃèÊö
-    #º¯Êı²ÎÊı£ºbAttach   £º¸Ã×Ö¶ÎÊÇ·ñÓĞ¸½¼ş×é³É²¿·Ö
-    #º¯Êı²ÎÊı£ºValue     £ºContentÄÚÈİ
-    #º¯Êı²ÎÊı£ºbEnd      £ºMIMEÊÇ·ñÈ«²¿½áÊø
-    def __AddMimeData(self, name, bAttach, Value, bEnd):
-        #×é×°½áÊø£¬¼Ó×°MIMEÎ²²¿Êı¾İ
-        if bEnd:
-            self.__Buffer += "--%s--\r\n\r\n" % self.boundary
+        self.close()
+    
+    def _ReadConfig(self, cConfig):
+        #æ˜¾ç¤ºç”¨æˆ·å
+        self.Label_CurUser.setText(self._translate("AddWorkWindow", "%s" % (cConfig.UserName)))
+        #åŠ ç­é¤
+        Index = int(cConfig.Dinner)
+        self.Combo_Dinner.setCurrentIndex((~Index)&0x01)
+        #åŠ ç­ç­è½¦
+        Index = int(cConfig.Bus)
+        self.Combo_Bus.setCurrentIndex((~Index)&0x01)
+        #åŠ ç­ç†ç”±
+        self.Edit_Reason.setText(self._translate("AddWorkWindow", "%s" % (cConfig.Reason)))
+        
+    def Exit(self):
+        #åˆ°ç™»å½•ç•Œé¢
+        self.hide()
+        self._cLogin.Show(self, self._cConfig)
+    
+    def AddWork(self):
+        cHttp = CHttp()
+        cForm = CForm()
+        cRegex = CRegex()
+        cMime = CMIME()
+        #ç™»å½•æˆåŠŸå®šä¹‰
+        SuccessStr = "æ­£åœ¨è¿›å…¥OAç³»ç»Ÿï¼Œè¯·ç¨å€™..."
+        
+        #æ£€æµ‹æ•°æ®æœ‰æ•ˆæ€§
+        if (None==self._cConfig.UserName or None==self._cConfig.Password or \
+                0==len(self._cConfig.Reason)):
             return
-
-        #²ÎÊı¼ì²â
-        if None == name:
+        #ç»´æŒé•¿é“¾
+        cHttp.SetReqHead("Connection", "Keep-Alive")
+    
+        #Step1ï¼šè¿æ¥
+        self._WriteStatus("æ­£åœ¨è¿æ¥è‡³æœåŠ¡å™¨â€¦â€¦")
+        cHttp.Connect("120.27.241.239")
+    
+        #Step2ï¼šç™»å½•
+        self._WriteStatus("POST /logincheck.php")
+        #ç¼–ç 
+        UserName = self._cConfig.UserName.encode("GBK")
+        Password = base64.b64encode(self._cConfig.Password.encode("utf-8"))
+        
+        #ç™»å½•çš„äº¤äº’è¿‡ç¨‹
+        cHttp.Connect()
+        ReqBody = urllib.parse.urlencode({'UNAME': UserName, 'PASSWORD': Password, 'encode_type': 1})
+        if (False == cHttp.Send("POST", "/logincheck.php", ReqBody)):
+            self._WriteStatus("å‘é€HTTPè¯·æ±‚å¤±è´¥")
+            cHttp.Close()
             return
-
-        #MIMEÍ·²¿
-        self.__Buffer += "--%s\r\n" % self.boundary
-        #ContentÃèÊö²¿·Ö
-        self.__Buffer += "Content-Disposition: form-data; name=\"%s\"" % name
-        if bAttach:
-            self.__Buffer += "; filename=\"\"\r\n"
-            self.__Buffer += "Content-Type: application/octet-stream\r\n"
-        else:
-            self.__Buffer += "\r\n"
-        #MIMEÄÚÈİ²¿·Ö
-        self.__Buffer += "\r\n"
-        if None != Value:
-            self.__Buffer += "%s\r\n" % Value
-        else:
-            self.__Buffer += "\r\n"
-
-class CUserInfo:
-    #ÓÃ»§Ãû
-    UserName = None
-    #ÃÜÂë
-    Password = None
-    #ÊÇ·ñ¼Ó°à²Í
-    Dinner = 1
-    #ÊÇ·ñ³Ë×ø°à³µ
-    Bus = 0
-    #¼Ó°àÀíÓÉ
-    Reason = ""
-    #ÅäÖÃÎÄ¼şÊÇ·ñ±»ĞŞ¸Ä
-    bFileChange = False
-
-    #º¯ÊıÃû³Æ£ºCMIME::__init__
-    #º¯Êı¹¦ÄÜ£º¹¹Ôìº¯Êı
-    #º¯Êı·µ»Ø£ºÎŞ
-    #º¯Êı²ÎÊı£ºÎŞ
-    def __init__(self, UserName):
-        self.UserName = UserName
-
-#º¯ÊıÃû³Æ£ºAddWork
-#º¯Êı¹¦ÄÜ£ºÖ´ĞĞÒ»¼ü¼Ó°à
-#º¯Êı·µ»Ø£º0³É¹¦ 1²ÎÊı´íÎó 2ÍøÂç´íÎó 3ÈÏÖ¤´íÎó 4±íµ¥ÒÑ´æÔÚ 5Ìá½»±íµ¥´íÎó 6ÆäËü´íÎó
-#º¯Êı²ÎÊı£ºcUserInfo     £ºÓÃ»§ĞÅÏ¢
-def AddWork(cUserInfo):
-    #HTTPÊı¾İÊÕ·¢
-    cHttp = CHttp()
-    #GzipÊı¾İ½âÑ¹
-    cUnZip = CUnzip()
-    #¼Ó°àÌá½»±íµ¥
-    cForm = CForm()
-    #ÕıÔò±í´ïÊ½Àà
-    cRegex = CRegex()
-    #MIMEÀà
-    cMine = CMIME()
-    #µÇÂ¼³É¹¦¶¨Òå
-    SuccessStr = "ÕıÔÚ½øÈëOAÏµÍ³£¬ÇëÉÔºò..."
-    #Ê±¼ä¸ñÊ½¶¨Òå
-    TIME_FORMAT = "%X"
-    #UrlÊı¾İ»º´æ
-    pszUrlTemp = None
-
-    #¼ì²âÊı¾İÓĞĞ§ĞÔ
-    if None==cUserInfo.UserName or None==cUserInfo.Password or 0==len(cUserInfo.Reason):
-        return 1
-    #Êı¾İ±àÂë×ª»»
-    cUserInfo.UserName = cUserInfo.UserName
-    cUserInfo.Password = base64.b64encode(cUserInfo.Password)
-
-    #Step1£ºÁ¬½Ó
-    cHttp.Connect("120.27.241.239")
-
-    #Step2£ºµÇÂ¼
-    ReqBody = urllib.urlencode({'UNAME': cUserInfo.UserName, 'PASSWORD': cUserInfo.Password, 'encode_type': 1})
-    if False == cHttp.Send("POST", "/logincheck.php", ReqBody):
-        return 2
-    AckCode, AckHead, AckBody = cHttp.Receive()
-    if 200 != AckCode:
-        return 2
-    #½âÑ¹Êı¾İ
-    Data = cUnZip.Decompress(AckBody)
-    #ÑéÖ¤µÇÂ¼½á¹û
-    Result = Data.find(SuccessStr)
-    if -1 == Result:
-        print ("ÓÃ»§Ãû»òÃÜÂë´íÎó")
-        return 3
-
-    #Step3£ºÌáÈ¡±íµ¥
-    cHttp.DelReqHead("Origin")
-    cHttp.DelReqHead("Content-Type")
-    if False == cHttp.Send("GET", "/general/workflow/new/edit.php?FLOW_ID=%s&AUTO_NEW=1" % cForm.flow_id):
-        return 2
-    AckCode, AckHead, AckBody = cHttp.Receive()
-    #ÑéÖ¤±íµ¥Êı¾İ
-    if 302 == AckCode:
-        ResData = ""
-        for HeadType in AckHead:
-            if HeadType[0] == "location":
-                ResData = HeadType[1]
-    elif 200 == AckCode:
-        print ("ĞÂ½¨±íµ¥Ê§°Ü£¬ÕıÔÚ²éÕÒÒÑÓĞ±íµ¥Êı¾İ¡­¡­")
-        #ÇëÇóÊı¾İ
-        ReqUrl = "/portal/personal/workflow.php"
-        if False == cHttp.Send("GET", ReqUrl):
-            return 2
         AckCode, AckHead, AckBody = cHttp.Receive()
         if 200 != AckCode:
-            return 2
-        ResData = cUnZip.Decompress(AckBody)
-        #²éÕÒ±íµ¥Êı¾İ¡£¹¹½¨ÕıÔò±í´ïÊ½
-        szRegexTemp = "<td align=\"left\">.*?openURL\(.*?,.*?,'(.*?)'\)\">¼Ó°àµÇ¼Ç"
-        szRegexTemp += "£¨%s£©" % time.strftime("%YÄê%mÔÂ%dÈÕ", time.localtime())
-        szRegexTemp += ".*?-%s" % cUserInfo.UserName
-        pszUrlTemp = cRegex.Match(szRegexTemp, ResData, 1)
-        if (None == pszUrlTemp):
-            print ("Ã»ÓĞÕÒµ½ÓĞĞ§±íµ¥")
-            return 1
-        print ("²éÕÒ³É¹¦£¬ÕıÔÚÖ´ĞĞºóĞø²½Öè¡­¡­")
-    else:
-        print ("½ÓÊÕµ½ÏìÓ¦´íÎó£¬HTTP·µ»ØÂëÎª%d") % AckCode
-        return 2
-		
-    #¸ù¾İÕıÔò±í´ïÊ½ÌîĞ´±íµ¥
-    cForm.run_id = cRegex.Match(r'RUN_ID=(.*?)&', ResData, 1)
-    cForm.prcs_id = cRegex.Match(r'PRCS_ID=(.*?)&', ResData, 1)
-    cForm.flow_prcs = cRegex.Match(r'FLOW_PRCS=(.*?)&', ResData, 1)
-    cForm.prcs_key_id = cRegex.Match(r'PRCS_KEY_ID=(.*)', ResData, 1)
-    if None==cForm.run_id or None==cForm.prcs_id or None==cForm.flow_prcs or None==cForm.prcs_key_id:
-        return 1
+            self._WriteStatus("HTTPé”™è¯¯ï¼š%d" % (AckCode))
+            cHttp.Close()
+            return
+        #éªŒè¯ç™»å½•ç»“æœ
+        Result = AckBody.find(SuccessStr)
+        if -1 == Result:
+            self._WriteStatus("ç”¨æˆ·åæˆ–å¯†ç é”™è¯¯")
+            cHttp.Close()
+            return
     
-    #Step4£º¼ÌĞø»ñÈ¡±íµ¥
-    if None == pszUrlTemp:
-        ReqUrl = "/general/workflow/list/input_form/?MENU_FLAG=&"
-        ReqUrl += "RUN_ID=%s&FLOW_ID=%s&PRCS_ID=%s&FLOW_PRCS=%s&AUTO_NEW=1&PRCS_KEY_ID=%s" % \
-                  (cForm.run_id, cForm.flow_id, cForm.prcs_id, cForm.flow_prcs, cForm.prcs_key_id)
-    else:
-        ReqUrl = pszUrlTemp
-
-    if False == cHttp.Send("GET", ReqUrl):
-        return 2
-    AckCode, AckHead, AckBody = cHttp.Receive()
-    if 200 != AckCode:
-        return 2
-    Data = cUnZip.Decompress(AckBody)
-    #¸ù¾İÕıÔò±í´ïÊ½ÌîĞ´±íµ¥
-    cForm.run_name = cRegex.Match(r'en_run_name.*?=[\s\S]*?run_name.*?= "(.*?)"', Data, 1)
-    if None == cForm.run_name:
-        return 1
-    cForm.run_name = urllib.unquote(cForm.run_name).decode("utf8").encode("GBK")
-    cForm.run_name_old = cForm.run_name
-    cForm.data_70 = cRegex.Match(r'£¨(.*?)£©(.*?)-(.*)', cForm.run_name, 2)
-    cForm.data_68 = cRegex.Match(r'£¨(.*?)£©(.*?)-(.*)', cForm.run_name, 3)
-    if None==cForm.data_70 or None==cForm.data_68:
-        return 1
-    #ÌîĞ´¼Ó°à»ù±¾²ÎÊı
-    #TIME
-    cForm.data_91 = time.strftime("%Y-%m-%d", time.localtime())
-    cForm.data_67 = time.strftime(TIME_FORMAT, time.localtime())
-    #¼Ó°à²Í
-    if (True == cUserInfo.Dinner):
-        cForm.data_89 = "ÊÇ"
-    else:
-        cForm.data_89 = "·ñ"
-    #¼Ó°à°à³µ
-    if (True == cUserInfo.Bus):
-        cForm.data_90 = "ÊÇ"
-    else:
-        cForm.data_90 = "·ñ"
-    #Reason
-    cForm.data_73 = cUserInfo.Reason
-
-    #Step5£ºÌá½»µ±Ç°ÓÃ»§Ãû
-    cHttp.SetReqHead("Origin", "http://do.sanhuid.com")
-    if False == cHttp.Send("POST", "/general/workflow/list/input_form/run_name_submit.php", ""):
-        return 2
-    AckCode, AckHead, AckBody = cHttp.Receive()
-    if 200 != AckCode:
-        return 2
-
-    #Step6£º¼Ó°àÉêÇë£¬×é×°BodyÊı¾İ
-    cHttp.SetReqHead("Cache-Control", "max-age=0")
-    cHttp.SetReqHead("Upgrade-Insecure-Requests", "1")
-    cHttp.SetReqHead("Content-Type", "multipart/form-data; boundary=%s" % cMine.boundary)
-    cHttp.Send("POST", "/general/workflow/list/input_form/input_submit.php", cMine.AssembleMimeData(False, cForm))
-    AckCode, AckHead, AckBody = cHttp.Receive()
-    if 200 != AckCode:
-        return 2
-    Data = cUnZip.Decompress(AckBody)
-    #¾¯¸æ±êÖ¾
-    Alert = cRegex.Match(r'alert\("(.*?)"\)', Data, 1, False)
-    if None != Alert:
-        print ("Ìá½»±íµ¥ĞÅÏ¢´íÎó£º%s") % Alert
-        return 5
-    #×ª½»³É¹¦±êÖ¾
-    if None == Data.find(r"\u8f6c\u4ea4\u6210\u529f"):
-        print ("Ìá½»±íµ¥ĞÅÏ¢´íÎó£ºÎ´ÖªÔ­Òò")
-        return 5
-
-    #Step7£ºµÚ¶ş´ÎÌá½»±íµ¥
-    cHttp.Send("POST", "/general/workflow/list/input_form/input_submit.php", cMine.AssembleMimeData(True, cForm))
-    AckCode, AckHead, AckBody = cHttp.Receive()
-    if 200 != AckCode:
-        return 2
-
-    #Step8£ºÈ·ÈÏ¼Ó°à
-    #»ñÈ¡µ±Ç°Ê±¼äµÄºÁÃëÊ±¼ä´Á
-    CurMillTime = int(time.time()*1000)
-    ReqBody = "_search=false&nd=%s&rows=10&page=1&sidx=run_id&sord=desc" % CurMillTime
-    cHttp.Send("POST", "/general/workflow/list/data/getdata.php?pageType=todo", ReqBody)
-    AckCode, AckHead, AckBody = cHttp.Receive()
-    if 200 != AckCode:
-        return 2
-
-    #´òÓ¡ÈÕÖ¾
-    print("Ò»¼ü¼Ó°à½Å±¾Ö´ĞĞÍê³É£¬ÇëµÇÂ¼ÍøÒ³²é¿´¾ßÌåĞÅÏ¢")
-    print("¼Ó°àĞÅÏ¢£º")
-    print("¼Ó°àÊ±¼ä£º%s %s") % (cForm.data_91, cForm.data_67)
-    print("ĞÕÃû£º%s, ²¿ÃÅ£º%s, ¼Ó°à²Í£º%s, °à³µ£º%s, ¼Ó°àÀíÓÉ£º%s") % (cForm.data_68, cForm.data_70, cForm.data_89, cForm.data_90, cForm.data_73)
-    return 0
-
-    #Step9£º¹Ø±ÕÁ¬½Ó
-    cHttp.Close()
-
-#º¯ÊıÃû³Æ£ºReadFile
-#º¯Êı¹¦ÄÜ£º¶ÁÈ¡ÅäÖÃÎÄ¼ş
-#º¯Êı·µ»Ø£º0³É¹¦ 1´ò¿ªÎÄ¼şÊ§°Ü 2½âÃÜÊ§°Ü 3²ÎÊı´íÎó
-#º¯Êı²ÎÊı£ºcUserInfo     £ºÓÃ»§ĞÅÏ¢
-#º¯Êı²ÎÊı£ºcCfgFile      £ºÅäÖÃÎÄ¼şĞÅÏ¢
-#º¯Êı²ÎÊı£ºdes           £º¼Ó½âÃÜÀà
-def ReadFile(cUserInfo, cCfgFile,  des):
-    FileText = cCfgFile.ReadTextFile()
-    if None == FileText:
-        print ("´ò¿ªÅäÖÃÎÄ¼şÊ§°Ü")
-        return 1
-
-    #Êı¾İ½âÃÜ
-    DecryptData = des.DESDecode(FileText, cUserInfo.UserName)
-    #È¥³ıÎ²²¿'\0'
-    DataLen = len(DecryptData)
-    for i in range(DataLen, 0, -1):
-        if '\0' != DecryptData[DataLen-1]:
-            break
-        DataLen = DataLen - 1
-        DecryptData = DecryptData[:DataLen]
-    Couple = DecryptData.split('-')
-    if 5 > len(Couple):
-        print ("Êı¾İ½âÃÜÊ§°Ü")
-        return 2
-    cUserInfo.UserName = Couple[0]
-    cUserInfo.Password = Couple[1]
-    if '1' == Couple[2]:
-        cUserInfo.Dinner = True
-    elif '0' == Couple[2]:
-        cUserInfo.Dinner = False
-    else:
-        return 3
-
-    if '1' == Couple[3]:
-        cUserInfo.Bus = True
-    elif '0' == Couple[3]:
-        cUserInfo.Bus = False
-    else:
-        return 3
-    cUserInfo.Reason = Couple[4]
-
-    return 0
-
-#º¯ÊıÃû³Æ£ºChangeConfig
-#º¯Êı¹¦ÄÜ£ºĞŞ¸ÄÅäÖÃÎÄ¼ş
-#º¯Êı·µ»Ø£ºTrue³É¹¦£¬FalseÊ§°Ü
-#º¯Êı²ÎÊı£ºcUserInfo		£ºÓÃ»§ĞÅÏ¢
-#º¯Êı²ÎÊı£ºbFirst			£ºÊÇ·ñµÚÒ»´ÎÌîĞ´
-#º¯Êı²ÎÊı£ºbChangePsw		£ºÊÇ·ñĞèÒªĞŞ¸ÄÃÜÂë
-#º¯Êı²ÎÊı£ºbChangeCfg		£ºÊÇ·ñĞèÒªĞŞ¸ÄÅäÖÃ
-def ChangeConfig(cUserInfo, bFirst, bChangePsw=False, bChangeCfg=False):
-    if True == bFirst:
-        #¼ì²â³ÌĞòÊÚÈ¨
-        UserName = raw_input("ÇëÊäÈëÓÃ»§Ãû: ")
-        if UserName != cUserInfo.UserName:
-            print ("ÓÃ»§ÑéÖ¤Ê§°Ü£¬ÇëÓëÈí¼şÌá¹©ÕßÁªÏµ~")
-            return False
-        #ÇëÊäÈëÃÜÂë
-        Password = raw_input("ÇëÊäÈëÃÜÂë: ")
-        Password2 = raw_input("ÇëÔÙ´ÎÊäÈë£º ")
-        if (Password != Password2):
-            print ("ÊäÈëµÄÁ½´ÎÃÜÂë²»Í¬")
-            return False
-        #±£´æÃÜÂë
-        cUserInfo.Password = Password
-        #Ìí¼Ó²ÎÊı
-        bChangeCfg = True
-
-    if True == bChangePsw:
-        #ÇëÊäÈëÔ­ÃÜÂë
-        Password = raw_input("ÇëÊäÈëÔ­ÃÜÂë: ")
-        if (Password != cUserInfo.Password):
-            print ("ÃÜÂë´íÎó")
-            return False
-        #ÇëÊäÈëĞÂÃÜÂë
-        Password = raw_input("ÇëÊäÈëĞÂÃÜÂë: ")
-        Password2 = raw_input("ÇëÔÙ´ÎÊäÈë£º ")
-        if (Password != Password2):
-            print ("ÊäÈëµÄÁ½´ÎÃÜÂë²»Í¬")
-            return False
-        #±£´æÃÜÂë
-        cUserInfo.Password = Password
-
-    if True == bChangeCfg:
-        #ÊÇ·ñĞèÒª¼Ó°à²Í
-        Dinner = raw_input("ÊÇ·ñĞèÒª¼Ó°à²Í(1ÊÇ2·ñ): ")
-        if '1' == Dinner:
-            cUserInfo.Dinner = 1
-        elif '2' == Dinner:
-            cUserInfo.Dinner = 0
+        #Step3ï¼šæå–è¡¨å•
+        self._WriteStatus("GET /general/workflow/new/edit.php?FLOW_ID=%s&AUTO_NEW=1" % (cForm.flow_id))
+        cHttp.DelReqHead("Origin")
+        cHttp.DelReqHead("Content-Type")
+        if (False == cHttp.Send("GET", "/general/workflow/new/edit.php?FLOW_ID=%s&AUTO_NEW=1" % cForm.flow_id)):
+            self._WriteStatus("å‘é€HTTPè¯·æ±‚å¤±è´¥")
+            cHttp.Close()
+            return
+        AckCode, AckHead, AckBody = cHttp.Receive()
+        #éªŒè¯è¡¨å•æ•°æ®
+        if (302 == AckCode):
+            ResData = ""
+            for HeadType in AckHead:
+                if (HeadType[0] == "location"):
+                    ResData = HeadType[1]
+        elif (200 == AckCode):
+            self._WriteStatus("æ–°å»ºè¡¨å•å¤±è´¥ï¼Œæ­£åœ¨æŸ¥æ‰¾å·²æœ‰è¡¨å•æ•°æ®â€¦â€¦")
+            #è¯·æ±‚æ•°æ®
+            self._WriteStatus("GET /portal/personal/workflow.php")
+            ReqUrl = "/portal/personal/workflow.php"
+            if (False == cHttp.Send("GET", ReqUrl)):
+                self._WriteStatus("å‘é€HTTPè¯·æ±‚å¤±è´¥")
+                cHttp.Close()
+                return
+            AckCode, AckHead, AckBody = cHttp.Receive()
+            if (200 != AckCode):
+                self._WriteStatus("HTTPé”™è¯¯ï¼š%d" % (AckCode))
+                cHttp.Close()
+                return
+            #è·å–å½“å‰ç³»ç»Ÿæ—¶é—´
+            cTime = time.localtime()
+            #æŸ¥æ‰¾è¡¨å•æ•°æ®ã€‚æ„å»ºæ­£åˆ™è¡¨è¾¾å¼
+            szRegexTemp = "<td align=\"left\">.*?openURL\(.*?,.*?,'(.*?)'\)\">åŠ ç­ç™»è®°"
+            szRegexTemp += "ï¼ˆ%så¹´[0]?%sæœˆ[0]?%sæ—¥ï¼‰" % (str(cTime.tm_year), str(cTime.tm_mon), str(cTime.tm_mday))
+            szRegexTemp += ".*?-%s" % self._cConfig.UserName
+            pszUrlTemp = cRegex.Match(szRegexTemp, AckBody, 1)
+            if (None == pszUrlTemp):
+                self._WriteStatus("æ²¡æœ‰æ‰¾åˆ°æœ‰æ•ˆè¡¨å•")
+                cHttp.Close()
+                return
+            self._WriteStatus("æŸ¥æ‰¾æˆåŠŸï¼Œæ­£åœ¨æ‰§è¡Œåç»­æ­¥éª¤â€¦â€¦")
         else:
-            print ("ÊäÈëµÄ²ÎÊı²»ÕıÈ·")
-            return False
-        #ÊÇ·ñĞèÒª¼Ó°à°à³µ
-        Bus = raw_input("ÊÇ·ñĞèÒª¼Ó°à°à³µ(1ÊÇ2·ñ): ")
-        if '1' == Bus:
-            cUserInfo.Bus = 1
-        elif '2' == Bus:
-            cUserInfo.Bus = 0
-        else:
-            print ("ÊäÈëµÄ²ÎÊı²»ÕıÈ·")
-            return False
-        #¼Ó°àÀíÓÉ
-        cUserInfo.Reason = raw_input("¼Ó°àÀíÓÉ: ")
-
-    print ("ĞŞ¸ÄÅäÖÃ³É¹¦")
-    cUserInfo.bFileChange = True
-    return True
-
-#º¯ÊıÃû³Æ£ºSaveFile
-#º¯Êı¹¦ÄÜ£º±£´æÅäÖÃÎÄ¼ş
-#º¯Êı·µ»Ø£ºÎŞ
-#º¯Êı²ÎÊı£ºcUserInfo     £ºÓÃ»§ĞÅÏ¢
-#º¯Êı²ÎÊı£ºcCfgFile      £ºÅäÖÃÎÄ¼şĞÅÏ¢
-#º¯Êı²ÎÊı£ºdes           £º¼Ó½âÃÜÀà
-def SaveFile(cUserInfo, cCfgFile, des):
-    if False == cUserInfo.bFileChange:
-        return
-
-    if None==cUserInfo.UserName or None==cUserInfo.Password or 0==len(cUserInfo.Reason):
-        return
-
-    #±£´æµ½ÎÄ¼ş
-    Data = cUserInfo.UserName + '-' + cUserInfo.Password + '-'
-    if cUserInfo.Dinner:
-        Data += '1-'
-    else:
-        Data += '0-'
-
-    if cUserInfo.Bus:
-        Data += '1-'
-    else:
-        Data += '0-'
-    Data += cUserInfo.Reason
-
-    EncryptData = des.DESEncode(Data, cUserInfo.UserName)
-    cCfgFile.WriteTextFile(EncryptData)
-    #ÅäÖÃ²ÎÊıÖØĞÂĞŞ¸ÄÎªFalse
-    cUserInfo.bFileChange = False
-
-if __name__ == "__main__":
-    #ÓÃ»§Ãû¶¨Òå
-    UserName = "Ç®¼Î»¶"
-    #º¯Êı·µ»Ø½á¹û
-    FuncResult = 0
-    #ÓÃ»§¼Ó°àĞÅÏ¢
-    cUserInfo = CUserInfo(UserName)
-    #ÅäÖÃÎÄ¼ş
-    cCfgFile = CFileMng("./AddWork.cfg")
-    #¼Ó½âÃÜ¹¤¾ß
-    des = CDesCode()
-    #Êı¾İ»º´æ
-    szTemp = ""
-
-    while True:
-        #¶ÁÈ¡ÎÄ¼ş
-        FuncResult = ReadFile(cUserInfo, cCfgFile, des)
-        if 0!=FuncResult or UserName!=cUserInfo.UserName:
-            if False == ChangeConfig(cUserInfo, True):
-				print ("°´ÈÎÒâ¼üÍË³ö...")
-				Result = raw_input()
-				break
-            SaveFile(cUserInfo, cCfgFile, des)
-
-        #ÇåÆÁ
-        osClear = os.system("cls")
-        #´òÓ¡ÎÄ¼ş²¢Ñ¯ÎÊ
-        print("\n*********************************************************")
-        print ("»¶Ó­Ê¹ÓÃº¼ÖİÈı»ãÒ»¼ü¼Ó°à½Å±¾£¡")
-        print ("µ±Ç°ÓÃ»§Ãû: %s\n") % UserName
-        print ("ÇëÑ¡ÔñÒÔÏÂÑ¡Ïî£º")
-        print ("1.Ö´ĞĞÒ»¼ü¼Ó°à³ÌĞò")
-        print ("2.ĞŞ¸Ä±¾µØ±£´æÃÜÂë(²»ĞŞ¸ÄµÇÂ¼·şÎñÆ÷ËùĞèµÄÃÜÂë£¡)")
-        print ("3.²é¿´ÓÃ»§ĞÅÏ¢")
-        print ("4.ĞŞ¸Ä¼Ó°à²ÎÊı")
-        print ("5.É¾³ıÅäÖÃÎÄ¼ş")
-        print ("6.ÍË³ö³ÌĞò")
-        print("*********************************************************")
-        #ÊäÈë²ÎÊı
-        Input = raw_input()
-        #¸ù¾İÑ¡ÔñÖ´ĞĞÏà¹Ø³ÌĞò
-        if '1' == Input:
-            #ÑéÖ¤ÃÜÂë
-            Password = raw_input("ÇëÊäÈë±¾µØ±£´æµÄÃÜÂë: ")
-            if (Password != cUserInfo.Password):
-                print ("ÃÜÂë´íÎó")
-                Result = raw_input()
-                continue
-            #Ö´ĞĞ¼Ó°à³ÌĞò,²»¹Ü³É¹¦ÓëÊ§°Ü£¬¾ùÖ±½Ó±£´æÍË³ö
-            AddWork(cUserInfo)
-            SaveFile(cUserInfo, cCfgFile, des)
-            print ("°´ÈÎÒâ¼üÍË³ö...")
-            Result = raw_input()
-            break
-
-        elif '2' == Input:
-            ChangeConfig(cUserInfo, False, True, False)
-            SaveFile(cUserInfo, cCfgFile, des)
-            Result = raw_input()
-            continue
-
-        elif '3' == Input:
-            szTemp = "ÓÃ»§Ãû: %s, " % cUserInfo.UserName
-            szTemp += "¼Ó°à²Í: "
-            szTemp += "ÊÇ, " if 1==cUserInfo.Dinner else "·ñ, "
-            szTemp += "¼Ó°à°à³µ:"
-            szTemp += "ÊÇ, " if 1==cUserInfo.Bus else "·ñ, "
-            szTemp += "¼Ó°àÀíÓÉ: %s" % cUserInfo.Reason
-            print (szTemp)
-            Result = raw_input()
-            continue
-
-        elif '4' == Input:
-            #ÑéÖ¤ÃÜÂë
-            Password = raw_input("ÇëÊäÈë±¾µØ±£´æµÄÃÜÂë: ")
-            if (Password != cUserInfo.Password):
-                print ("ÃÜÂë´íÎó")
-                continue
-            ChangeConfig(cUserInfo, False, False, True)
-            SaveFile(cUserInfo, cCfgFile, des)
-            Result = raw_input()
-            continue
-
-        elif '5' == Input:
-            #ÑéÖ¤ÃÜÂë
-            Password = raw_input("ÇëÊäÈë±¾µØ±£´æµÄÃÜÂë: ")
-            if (Password != cUserInfo.Password):
-                print ("ÃÜÂë´íÎó")
-                continue
-            cCfgFile.DelTextFile()
-            print ("É¾³ıÅäÖÃÎÄ¼ş³É¹¦")
-            Result = raw_input()
-            continue
-
-        elif '6' == Input:
-            print ("°´ÈÎÒâ¼üÍË³ö...")
-            Result = raw_input()
-            break
+            self._WriteStatus("HTTPé”™è¯¯ï¼š%d" % (AckCode))
+            cHttp.Close()
+            return    
+        #æ ¹æ®æ­£åˆ™è¡¨è¾¾å¼å¡«å†™è¡¨å•
+        cForm.run_id = cRegex.Match(r'RUN_ID=(.*?)&', pszUrlTemp, 1)
+        cForm.prcs_id = cRegex.Match(r'PRCS_ID=(.*?)&', pszUrlTemp, 1)
+        cForm.flow_prcs = cRegex.Match(r'FLOW_PRCS=(.*?)', pszUrlTemp, 1)
+        #cForm.prcs_key_id = cRegex.Match(r'PRCS_KEY_ID=(.*)', pszUrlTemp, 1)
+        if (None==cForm.run_id or None==cForm.prcs_id or None==cForm.flow_prcs):
+            self._WriteStatus("æ•°æ®é”™è¯¯ï¼šæ­£åˆ™è¡¨è¾¾å¼æ²¡æœ‰åŒ¹é…åˆ°æ•°æ®")
+            return
         
+        #Step4ï¼šç»§ç»­è·å–è¡¨å•
+        if None == pszUrlTemp:
+            ReqUrl = "/general/workflow/list/input_form/?MENU_FLAG=&"
+            ReqUrl += "RUN_ID=%s&FLOW_ID=%s&PRCS_ID=%s&FLOW_PRCS=%s" % \
+                      (cForm.run_id, cForm.flow_id, cForm.prcs_id, cForm.flow_prcs)
         else:
-            print ("²ÎÊıÎŞĞ§")
-            Result = raw_input()
-            continue
+            ReqUrl = pszUrlTemp
+
+        self._WriteStatus("GET %s" % (ReqUrl))
+        if (False == cHttp.Send("GET", ReqUrl)):
+            self._WriteStatus("å‘é€HTTPè¯·æ±‚å¤±è´¥")
+            cHttp.Close()
+            return
+        AckCode, AckHead, AckBody = cHttp.Receive()
+        if (200 != AckCode):
+            self._WriteStatus("HTTPé”™è¯¯ï¼š%d" % (AckCode))
+            cHttp.Close()
+            return
+        #æ ¹æ®æ­£åˆ™è¡¨è¾¾å¼å¡«å†™è¡¨å•
+        cForm.prcs_key_id = cRegex.Match(r"prcs_key_id.*?= \'(.*?)\',", AckBody, 1)
+        cForm.run_name = cRegex.Match(r"en_run_name.*?=[\s\S]*?run_name.*?= \"(.*?)\"", AckBody, 1)
+        if (None == cForm.run_name):
+            self._WriteStatus("æ•°æ®é”™è¯¯ï¼šæ­£åˆ™è¡¨è¾¾å¼æ²¡æœ‰åŒ¹é…åˆ°æ•°æ®")
+            cHttp.Close()
+            return
+        cForm.run_name = urllib.parse.unquote(cForm.run_name)
+        cForm.run_name_old = cForm.run_name
+        cForm.data_70 = cRegex.Match(r'ï¼ˆ(.*?)ï¼‰(.*?)-(.*)', cForm.run_name, 2)
+        cForm.data_68 = cRegex.Match(r'ï¼ˆ(.*?)ï¼‰(.*?)-(.*)', cForm.run_name, 3)
+        if None==cForm.data_70 or None==cForm.data_68:
+            self._WriteStatus("æ•°æ®é”™è¯¯ï¼šæ­£åˆ™è¡¨è¾¾å¼æ²¡æœ‰åŒ¹é…åˆ°æ•°æ®")
+            return
+        #å¡«å†™åŠ ç­åŸºæœ¬å‚æ•°
+        #TIME
+        cForm.data_91 = time.strftime("%Y-%m-%d", time.localtime())
+        cForm.data_67 = time.strftime("%X", time.localtime())
+        #åŠ ç­é¤
+        if (True == self._cConfig.Dinner):
+            cForm.data_89 = "æ˜¯"
+        else:
+            cForm.data_89 = "å¦"
+        #åŠ ç­ç­è½¦
+        if (True == self._cConfig.Bus):
+            cForm.data_90 = "æ˜¯"
+        else:
+            cForm.data_90 = "å¦"
+        #Reason
+        cForm.data_73 = self._cConfig.Reason
+    
+        #Step5ï¼šæäº¤å½“å‰ç”¨æˆ·å
+        cHttp.SetReqHead("Origin", "http://do.sanhuid.com")
+        self._WriteStatus("POST /general/workflow/list/input_form/run_name_submit.php")
+        if (False == cHttp.Send("POST", "/general/workflow/list/input_form/run_name_submit.php", "")):
+            self._WriteStatus("å‘é€HTTPè¯·æ±‚å¤±è´¥")
+            cHttp.Close()
+            return
+        AckCode, AckHead, AckBody = cHttp.Receive()
+        if (200 != AckCode):
+            self._WriteStatus("HTTPé”™è¯¯ï¼š%d" % (AckCode))
+            cHttp.Close()
+            return
+    
+        #Step6ï¼šåŠ ç­ç”³è¯·ï¼Œç»„è£…Bodyæ•°æ®
+        cHttp.SetReqHead("Cache-Control", "max-age=0")
+        cHttp.SetReqHead("Upgrade-Insecure-Requests", "1")
+        cHttp.SetReqHead("Content-Type", "multipart/form-data; boundary=%s" % cMime.boundary)
+        self._WriteStatus("POST /general/workflow/list/input_form/input_submit.php")
+        if (False == cHttp.Send("POST", "/general/workflow/list/input_form/input_submit.php", cMime.AssembleMimeData(False, cForm).encode("GBK"))):
+            self._WriteStatus("å‘é€HTTPè¯·æ±‚å¤±è´¥")
+            cHttp.Close()
+            return
+        AckCode, AckHead, AckBody = cHttp.Receive()
+        if (200 != AckCode):
+            self._WriteStatus("HTTPé”™è¯¯ï¼š%d" % (AckCode))
+            cHttp.Close()
+            return
+        #è­¦å‘Šæ ‡å¿—
+        Alert = cRegex.Match(r'alert\("(.*?)"\)', AckBody, 1, False)
+        if None != Alert:
+            self._WriteStatus("æäº¤è¡¨å•ä¿¡æ¯é”™è¯¯ï¼š%s" % (Alert))
+            cHttp.Close()
+            return
+        #è½¬äº¤æˆåŠŸæ ‡å¿—
+        if None == AckBody.find(r"\u8f6c\u4ea4\u6210\u529f"):
+            self._WriteStatus("æäº¤è¡¨å•ä¿¡æ¯é”™è¯¯ï¼šæœªçŸ¥åŸå› ")
+            cHttp.Close()
+            return
+    
+        #Step7ï¼šç¬¬äºŒæ¬¡æäº¤è¡¨å•
+        self._WriteStatus("POST /general/workflow/list/input_form/input_submit.php")
+        if (False == cHttp.Send("POST", "/general/workflow/list/input_form/input_submit.php", cMime.AssembleMimeData(True, cForm).encode("GBK"))):
+            self._WriteStatus("å‘é€HTTPè¯·æ±‚å¤±è´¥")
+            cHttp.Close()
+            return
+        AckCode, AckHead, AckBody = cHttp.Receive()
+        if (200 != AckCode):
+            self._WriteStatus("HTTPé”™è¯¯ï¼š%d" % (AckCode))
+            cHttp.Close()
+            return
+        
+        #Step8ï¼šç¡®è®¤åŠ ç­
+        #è·å–å½“å‰æ—¶é—´çš„æ¯«ç§’æ—¶é—´æˆ³
+        CurMillTime = int(time.time()*1000)
+        ReqBody = "_search=false&nd=%s&rows=10&page=1&sidx=run_id&sord=desc" % CurMillTime
+        self._WriteStatus("POST /general/workflow/list/data/getdata.php?pageType=todo")
+        if (False == cHttp.Send("POST", "/general/workflow/list/data/getdata.php?pageType=todo", ReqBody.encode("GBK"))):
+            self._WriteStatus("å‘é€HTTPè¯·æ±‚å¤±è´¥")
+            cHttp.Close()
+            return
+        AckCode, AckHead, AckBody = cHttp.Receive()
+        if (200 != AckCode):
+            self._WriteStatus("HTTPé”™è¯¯ï¼š%d" % (AckCode))
+            cHttp.Close()
+            return
+    
+        #æ‰“å°æ—¥å¿—
+        self._WriteStatus("ä¸€é”®åŠ ç­è„šæœ¬æ‰§è¡Œå®Œæˆï¼Œè¯·ç™»å½•ç½‘é¡µæŸ¥çœ‹å…·ä½“ä¿¡æ¯")
+        self._WriteStatus("åŠ ç­ä¿¡æ¯ï¼š")
+        self._WriteStatus("åŠ ç­æ—¶é—´ï¼š%s %s" % (cForm.data_91, cForm.data_67))
+        self._WriteStatus("å§“åï¼š%s, éƒ¨é—¨ï¼š%s, åŠ ç­é¤ï¼š%s, ç­è½¦ï¼š%s, åŠ ç­ç†ç”±ï¼š%s" % (cForm.data_68, cForm.data_70, cForm.data_89, cForm.data_90, cForm.data_73))
+    
+        #Step9ï¼šå…³é—­è¿æ¥
+        cHttp.Close()
+        
+        #Step10:è®¾ç½®ä¸€é”®åŠ ç­ä¸ºdisable
+        self.Btn_AddWork.setEnabled(False)
+        
+        return
+    
+    def ChangePsw(self):
+        pass
+    
+    def _WriteStatus(self, szData):
+        self.Edit_Status.appendPlainText(szData)
+        QtWidgets.QApplication.processEvents()
+        

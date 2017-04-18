@@ -5,7 +5,7 @@ from PyQt5 import QtWidgets
 from LoginUI import *
 
 #登录窗口
-class CLogin(QtWidgets.QDialog, Ui_LoginWindow):
+class CLogin(QtWidgets.QMainWindow, Ui_LoginWindow):
     _translate = QtCore.QCoreApplication.translate
     #配置文件
     _cConfig = None

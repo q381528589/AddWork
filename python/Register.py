@@ -3,7 +3,7 @@
 from PyQt5 import QtWidgets
 from RegisterUI import *
 
-class CRegister(QtWidgets.QDialog, Ui_CRegister):
+class CRegister(QtWidgets.QMainWindow, Ui_CRegister):
     _translate = QtCore.QCoreApplication.translate
     _cConfig = None
     #主窗口

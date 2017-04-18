@@ -12,6 +12,15 @@ class Ui_CRegister(object):
     def setupUi(self, CRegister):
         CRegister.setObjectName("CRegister")
         CRegister.resize(262, 288)
+        CRegister.setFixedSize(CRegister.width(), CRegister.height()); 
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(CRegister.sizePolicy().hasHeightForWidth())
+        CRegister.setSizePolicy(sizePolicy)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("Icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        CRegister.setWindowIcon(icon)
         self.Label_User = QtWidgets.QLabel(CRegister)
         self.Label_User.setGeometry(QtCore.QRect(21, 18, 64, 20))
         font = QtGui.QFont()

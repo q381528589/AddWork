@@ -12,6 +12,14 @@ class Ui_AddWorkWindow(object):
     def setupUi(self, AddWorkWindow):
         AddWorkWindow.setObjectName("AddWorkWindow")
         AddWorkWindow.resize(374, 293)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(AddWorkWindow.sizePolicy().hasHeightForWidth())
+        AddWorkWindow.setSizePolicy(sizePolicy)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("Icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        AddWorkWindow.setWindowIcon(icon)
         self.CAddWork = QtWidgets.QWidget(AddWorkWindow)
         self.CAddWork.setObjectName("CAddWork")
         self.Label_User = QtWidgets.QLabel(self.CAddWork)
@@ -62,7 +70,7 @@ class Ui_AddWorkWindow(object):
 
     def retranslateUi(self, AddWorkWindow):
         _translate = QtCore.QCoreApplication.translate
-        AddWorkWindow.setWindowTitle(_translate("AddWorkWindow", "MainWindow"))
+        AddWorkWindow.setWindowTitle(_translate("AddWorkWindow", "一键加班"))
         self.Label_User.setText(_translate("AddWorkWindow", "当前用户："))
         self.Label_CurUser.setText(_translate("AddWorkWindow", "哈哈哈哈哈"))
         self.Label_Dinner.setText(_translate("AddWorkWindow", "加班餐：  "))

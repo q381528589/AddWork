@@ -12,7 +12,6 @@ class Ui_CRegister(object):
     def setupUi(self, CRegister):
         CRegister.setObjectName("CRegister")
         CRegister.resize(262, 288)
-        CRegister.setFixedSize(CRegister.width(), CRegister.height()); 
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -114,7 +113,7 @@ class Ui_CRegister(object):
         self.Text_RegCode = QtWidgets.QLineEdit(CRegister)
         self.Text_RegCode.setGeometry(QtCore.QRect(107, 114, 133, 23))
         font = QtGui.QFont()
-        font.setFamily("Agency FB")
+        font.setFamily("Times New Roman")
         font.setPointSize(9)
         self.Text_RegCode.setFont(font)
         self.Text_RegCode.setObjectName("Text_RegCode")

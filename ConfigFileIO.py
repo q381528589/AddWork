@@ -99,7 +99,7 @@ class CConfig:
 
     #函数名称：CConfig::WriteFile
     #函数功能：读取配置文件
-    #函数返回：0成功 1打开文件失败 2解密失败 3参数错误
+    #函数返回：0成功 1打开文件失败 2加密失败 3参数错误
     #函数参数：无
     #函数参数：无
     def WriteFile(self):
@@ -125,10 +125,10 @@ class CConfig:
         try:    
             EncryptData = self._cDes.Encrypt(Data, Md5Value)
             if (None == EncryptData):
-                logging.error("数据解密失败：导入的MD5值不正确")
+                logging.error("数据加密失败：导入的MD5值不正确")
                 return 2
         except:
-            logging.error("数据解密失败：未知原因")
+            logging.error("数据加密失败：未知原因")
             return 2
         
         #跳过密码字段

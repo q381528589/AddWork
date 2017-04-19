@@ -296,7 +296,39 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
     
     def ChangePsw(self):
         pass
-    
+
+    def eventFilter(self, obj, event):
+        #只处理失去焦点的事件
+        if (event.type() != QtCore.QEvent.FocusOut):
+            return False
+        
+        #加班理由修改
+        if (obj==self.Edit_Reason \
+                and self._cConfig.Reason!=self.Edit_Reason.text()):
+            self._cConfig.Reason = self.Edit_Reason.text()
+            if (0 != self._cConfig.WriteFile()):
+                self._WriteStatus("修改加班字段失败：详情见日志")
+        
+        #加班餐修改
+        if (obj==self.Combo_Dinner):
+            Index = self.Combo_Dinner.currentIndex()
+            if (self._cConfig.Dinner == (~Index)&0x01):
+                return False
+            self._cConfig.Dinner = (~Index)&0x01
+            if (0 != self._cConfig.WriteFile()):
+                self._WriteStatus("修改加班餐字段失败：详情见日志")
+                
+        #加班班车修改
+        if (obj==self.Combo_Bus):
+            Index = self.Combo_Bus.currentIndex()
+            if (self._cConfig.Bus == (~Index)&0x01):
+                return False
+            self._cConfig.Bus = (~Index)&0x01
+            if (0 != self._cConfig.WriteFile()):
+                self._WriteStatus("修改加班班车字段失败：详情见日志")
+                        
+        return False
+            
     def _WriteStatus(self, szData):
         self.Edit_Status.appendPlainText(szData)
         QtWidgets.QApplication.processEvents()

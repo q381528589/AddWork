@@ -46,6 +46,15 @@ class CLogin(QtWidgets.QMainWindow, Ui_LoginWindow):
         self.close()
 
 
+    #函数名称：CLogin::keyPressEvent
+    #函数功能：触发键盘事件
+    #函数返回：无
+    #函数参数：e        ：键盘事件
+    def keyPressEvent(self, e):
+        if e.key() == QtCore.Qt.Key_Enter:
+            self.Login()
+            
+            
     #函数名称：CLogin::Login
     #函数功能：登录，成功后切到主窗口
     #函数返回：无
@@ -77,6 +86,9 @@ class CLogin(QtWidgets.QMainWindow, Ui_LoginWindow):
         #根据复选框结果决定是否重写配置文件
         if (self.Check_NoPsw.isChecked()):
             self._cConfig.bSkip = True
+            self._cConfig.WriteFile()
+        else:
+            self._cConfig.bSkip = False
             self._cConfig.WriteFile()
                     
         #跳转至主界面

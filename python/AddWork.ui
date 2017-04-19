@@ -98,6 +98,9 @@
       <height>120</height>
      </rect>
     </property>
+    <property name="readOnly">
+     <bool>true</bool>
+    </property>
    </widget>
    <widget class="QLineEdit" name="Edit_Reason">
     <property name="geometry">
@@ -193,6 +196,15 @@
    </widget>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>Btn_Exit</tabstop>
+  <tabstop>Combo_Dinner</tabstop>
+  <tabstop>Combo_Bus</tabstop>
+  <tabstop>Edit_Reason</tabstop>
+  <tabstop>Btn_ChgPsw</tabstop>
+  <tabstop>Btn_AddWork</tabstop>
+  <tabstop>Edit_Status</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

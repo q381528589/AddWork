@@ -23,6 +23,10 @@ class CRegister(QtWidgets.QMainWindow, Ui_CRegister):
         
     def Close(self):
         self.close()
+        
+    def keyPressEvent(self, e):
+        if e.key() == QtCore.Qt.Key_Enter:
+            self.Regist()
             
     def Regist(self):
         self._cConfig.UserName = self.Text_User.text()

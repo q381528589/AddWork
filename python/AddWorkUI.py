@@ -39,6 +39,7 @@ class Ui_AddWorkWindow(object):
         self.Label_Reason.setObjectName("Label_Reason")
         self.Edit_Status = QtWidgets.QPlainTextEdit(self.CAddWork)
         self.Edit_Status.setGeometry(QtCore.QRect(20, 140, 330, 120))
+        self.Edit_Status.setReadOnly(True)
         self.Edit_Status.setObjectName("Edit_Status")
         self.Edit_Reason = QtWidgets.QLineEdit(self.CAddWork)
         self.Edit_Reason.setGeometry(QtCore.QRect(90, 110, 260, 20))
@@ -63,10 +64,19 @@ class Ui_AddWorkWindow(object):
         self.Btn_Exit = QtWidgets.QPushButton(self.CAddWork)
         self.Btn_Exit.setGeometry(QtCore.QRect(310, 10, 41, 23))
         self.Btn_Exit.setObjectName("Btn_Exit")
+        self.Edit_Reason.installEventFilter(self)
+        self.Combo_Dinner.installEventFilter(self)
+        self.Combo_Bus.installEventFilter(self)
         AddWorkWindow.setCentralWidget(self.CAddWork)
 
         self.retranslateUi(AddWorkWindow)
         QtCore.QMetaObject.connectSlotsByName(AddWorkWindow)
+        AddWorkWindow.setTabOrder(self.Btn_Exit, self.Combo_Dinner)
+        AddWorkWindow.setTabOrder(self.Combo_Dinner, self.Combo_Bus)
+        AddWorkWindow.setTabOrder(self.Combo_Bus, self.Edit_Reason)
+        AddWorkWindow.setTabOrder(self.Edit_Reason, self.Btn_ChgPsw)
+        AddWorkWindow.setTabOrder(self.Btn_ChgPsw, self.Btn_AddWork)
+        AddWorkWindow.setTabOrder(self.Btn_AddWork, self.Edit_Status)
 
     def retranslateUi(self, AddWorkWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -83,4 +93,3 @@ class Ui_AddWorkWindow(object):
         self.Btn_ChgPsw.setText(_translate("AddWorkWindow", "修改密码"))
         self.Btn_AddWork.setText(_translate("AddWorkWindow", "一键加班"))
         self.Btn_Exit.setText(_translate("AddWorkWindow", "退出"))
-

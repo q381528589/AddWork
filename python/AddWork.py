@@ -84,16 +84,14 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
     
         #Step1：连接
         self._WriteStatus("正在连接至服务器……")
-        cHttp.Connect("120.27.241.239")
+        cHttp.Connect()
     
         #Step2：登录
         self._WriteStatus("POST /logincheck.php")
         #编码
         UserName = self._cConfig.UserName.encode("GBK")
         Password = base64.b64encode(self._cConfig.Password.encode("utf-8"))
-        
         #登录的交互过程
-        cHttp.Connect()
         ReqBody = urllib.parse.urlencode({'UNAME': UserName, 'PASSWORD': Password, 'encode_type': 1})
         if (False == cHttp.Send("POST", "/logincheck.php", ReqBody)):
             self._WriteStatus("发送HTTP请求失败")
@@ -121,11 +119,11 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
             return
         AckCode, AckHead, AckBody = cHttp.Receive()
         #验证表单数据
+        pszUrlTemp = ""
         if (302 == AckCode):
-            ResData = ""
             for HeadType in AckHead:
                 if (HeadType[0] == "location"):
-                    ResData = HeadType[1]
+                    pszUrlTemp = HeadType[1]
         elif (200 == AckCode):
             self._WriteStatus("新建表单失败，正在查找已有表单数据……")
             #请求数据

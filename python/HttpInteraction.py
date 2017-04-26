@@ -114,7 +114,10 @@ class CHttp:
     #函数参数：Key       ：字典Key，字段类型
     #函数参数：Value     ：字典Value，字段参数
     def SetReqHead(self, Key, Value):
-        self.__ReqHead.setdefault(Key, Value)
+        if (Key in self.__ReqHead):
+            self.__ReqHead[Key] = Value
+        else:
+            self.__ReqHead.setdefault(Key, Value)
 
     #函数名称：CHttp::DelReqHead
     #函数功能：删除请求头部数据

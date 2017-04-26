@@ -23,7 +23,7 @@ if __name__ == '__main__':
                         format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S',
                         filename='AddWork.log',
-                        filemode='w')
+                        filemode='w+')
     #读取配置文件
     if (0 == cConfig.ReadFile()):
         bReadFile = True

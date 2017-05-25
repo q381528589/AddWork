@@ -185,7 +185,9 @@ class CHttp:
         self.__cCookie.SetCookie(self.__Response.getheader("set-cookie"))
         self.__AckBody = self.__Response.read()
         #解压缩
-        if (-1 != self.__Response.getheader("Content-Encoding").find('gzip')):
+        Encoding = self.__Response.getheader("Content-Encoding")
+        if (None!=Encoding and -1!=Encoding.find('gzip')):
+            logging.info("解压HTTP数据")
             self.__AckBody = self.__cUnZip.Decompress(self.__AckBody)
         
         return self.__AckCode, self.__AckHead, self.__AckBody
@@ -215,10 +217,12 @@ class CUnzip:
     def Decompress(self, SrcData):
         try:  
             DstData = gzip.decompress(SrcData)
-        except:  
+            DstData = DstData.decode("GBK")
+        except:
+            logging.error("gzip解压失败")
             DstData = SrcData
         
-        return DstData.decode("GBK")
+        return DstData
 
 #表单类
 class CForm:

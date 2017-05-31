@@ -3,7 +3,7 @@
 from PyQt5 import QtWidgets
 from AddWork import *
 from ConfigFileIO import CFileMng, CConfig
-from DesCode import CDESCode
+from DESCode import CDESCode
 import logging
 
 Version = "2.0.0"

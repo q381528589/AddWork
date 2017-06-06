@@ -117,9 +117,10 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
             self._WriteStatus("发送HTTP请求失败")
             cHttp.Close()
             return
+        self._WriteStatus("发送HTTP请求成功")
         AckCode, AckHead, AckBody = cHttp.Receive()
         #验证表单数据
-        pszUrlTemp = ""
+        pszUrlTemp = None
         if (302 == AckCode):
             for HeadType in AckHead:
                 if (HeadType[0] == "location"):
@@ -169,7 +170,8 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
             ReqUrl += "RUN_ID=%s&FLOW_ID=%s&PRCS_ID=%s&FLOW_PRCS=%s" % \
                       (cForm.run_id, cForm.flow_id, cForm.prcs_id, cForm.flow_prcs)
         else:
-            ReqUrl = pszUrlTemp
+            SplitList = pszUrlTemp.split("../")
+            ReqUrl = "/general/workflow/" + SplitList[len(SplitList)-1]
 
         self._WriteStatus("GET %s" % (ReqUrl))
         if (False == cHttp.Send("GET", ReqUrl)):

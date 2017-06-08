@@ -2,27 +2,87 @@
 
 import os, sys, subprocess
 import urllib
-from PyQt5 import QtWidgets
+import threading
+from PyQt5 import QtCore, QtWidgets
 from updateUI import *
 
 #下载路径
 DOWNLOAD_PATH = "https://raw.githubusercontent.com/q381528589/Publisher/master/Addwork/"
 
-class CUpdate(QtWidgets.QMainWindow, Ui_UpdateWindow):
+class CDownload(threading.Thread):
+    Percent = 0
+    ThreadStatus = False
+    
+    def __init__(self):
+        super(CDownload, self).__init__()
+        
+    def run(self):
+        self.ThreadStatus = True
+        self.__HandleAddwork()
+        return
+
+    def Schedule(self, a,b,c):
+        '''''
+        a:已经下载的数据块
+        b:数据块的大小
+        c:远程文件的大小
+       '''
+        self.Percent = 100.0 * a * b / c
+        if self.Percent > 100 :
+            self.Percent = 100
+        #print ('%.1f%%' % self.Percent)
+        
+    def __HandleAddwork(self):
+        #获取网络上最新版本
+        try:
+            urllib.request.urlretrieve(DOWNLOAD_PATH+"AddWork.exe", "./AddWork.exe.download", self.Schedule)
+#             r = requests.get(DOWNLOAD_PATH+"AddWork.exe", stream=True)
+#             File = open("./AddWork.exe.download", "wb")
+#             for chunk in r.iter_content(chunk_size=1024):
+#                 if chunk:
+#                     File.write(chunk)
+#             File.close()
+#       try:
+#           f = urllib.request.urlopen(DOWNLOAD_PATH+"AddWork.exe")
+#           data = f.read()
+#           f.close()
+        except:
+            print ("获取更新程序失败")
+            self.ThreadStatus = False
+            return
+        
+        #关闭程序
+        try:
+            subprocess.check_call("taskkill /F /IM AddWork.exe")
+        except:
+            #TODO：用户手动关闭程序
+            pass
+        
+        #重命名文件
+        if (os.path.exists("./AddWork.exe")):
+            os.remove("./AddWork.exe")
+        os.rename("./AddWork.exe.download", "./AddWork.exe")
+        
+        self.ThreadStatus = False
+        return
+    
+class CUpdate(QtWidgets.QDialog, Ui_Dialog):
     __translate = QtCore.QCoreApplication.translate
+    __cDownload = CDownload()
+    __bShow = False
     
     def __init__(self):
         super(CUpdate, self).__init__()
         self.setupUi(self)
-        self.__Init()
+        self.Btn_OK.clicked.connect(self.__StartDownload)
     
-    def __Init(self):
+    def Update(self):
         #是否需要更新
         __bUpdate = False
         #update程序版本
-        __UpdateVersion=""
+        __UpdateVersion="0.0.0.0"
         #Addwork程序版本
-        __AddWorkVersion=""
+        __AddWorkVersion="0.0.0.0"
         
         #获取自身版本号和其它版本号
         self.__ReadLocalVersion()
@@ -57,14 +117,15 @@ class CUpdate(QtWidgets.QMainWindow, Ui_UpdateWindow):
                 self.__bUpdate = self.__CheckVersion(self.__AddWorkVersion, Version[1])
                 if (False == self.__bUpdate):
                     continue
-                self.__UpdateAddwork()
+                self.__UpdateAddwork(Version[1])
                 #写入版本文件
                 self.__AddWorkVersion = Version[1]
         
         #TODO：更新版本文件
-        #self.WriteLocalVersion()
+        #self.__WriteLocalVersion()
         #退出更新程序
-        sys.exit()
+        if (False == self.__bShow):
+            sys.exit()
         return
     
     def __ReadLocalVersion(self):
@@ -75,7 +136,7 @@ class CUpdate(QtWidgets.QMainWindow, Ui_UpdateWindow):
             File.close()
         except:
             print ("打开文件错误")
-            sys.exit()
+            return
         
         for VersionInfo in List:
             #update版本
@@ -121,7 +182,7 @@ class CUpdate(QtWidgets.QMainWindow, Ui_UpdateWindow):
             f.close()
         except:
             print ("获取更新程序失败")
-            return
+            sys.exit()
         #写至缓存文件
         try:
             File = open("./update.exe.download", "wb")
@@ -129,53 +190,41 @@ class CUpdate(QtWidgets.QMainWindow, Ui_UpdateWindow):
             File.close()
         except:
             print ("写入更新程序失败")
+            sys.exit()
         #重命名文件
+        if (os.path.exists("./update.exe.tmp")):
+            os.remove("./update.exe.tmp")
         os.rename("./update.exe.download", "./update.exe.tmp")
+        
+        return
     
-    def __UpdateAddwork(self):
-        #先提示用户是否更新
-        button=QtWidgets.QMessageBox.question(self,"Question",  
-                                    self.tr("检测到最新版本，是否更新？"),  
-                                    QtWidgets.QMessageBox.Ok|QtWidgets.QMessageBox.Cancel,  
-                                    QtWidgets.QMessageBox.Ok)  
-        if (button==QtWidgets.QMessageBox.Ok):
-            self.show()
-            self.__HandleAddwork()
-        elif (button==QtWidgets.QMessageBox.Cancel):  
-            return
-        else:  
-            return
+    def __UpdateProcessBar(self):
+        while (True == self.__cDownload.ThreadStatus):  
+            self.progressBar.setValue(self.__cDownload.Percent)  
+            QtCore.QThread.msleep(100)
+            QtWidgets.QApplication.processEvents()
+        return
     
-    def __HandleAddwork(self):
-        #获取网络上最新版本
-        try:
-            f = urllib.request.urlopen(DOWNLOAD_PATH+"AddWork.exe")
-            data = f.read()
-            f.close()
-        except:
-            print ("获取更新程序失败")
-            return
-        
-        #关闭程序
-        Status = subprocess.check_call("taskkill /F /IM AddWork.exe")
-        if (0 != Status):
-            #TODO：用户手动关闭程序
-            pass
-        
-        #写至缓存文件
-        try:
-            File = open("./AddWork.exe.download", "wb")
-            File.write(data)
-            File.close()
-        except:
-            print ("写入更新程序失败")
-        #重命名文件
-        
-        os.rename("./update.exe.download", "./update.exe.tmp")
-        #TODO：提示
-        
+    def __UpdateAddwork(self, CurVersion):
+        self.label.setText(self.__translate("Dialog", "发现新版本：%s，是否更新？") % (CurVersion))
+        self.progressBar.hide()
+        self.__bShow = True
+        self.show()
+        return
+    
+    def __StartDownload(self):
+        self.label.hide()
+        self.Btn_OK.setEnabled(False)
+        self.progressBar.show()
+        self.__cDownload.start()
+        self.__UpdateProcessBar()
+        self.Btn_OK.clicked.connect(self.close)
+        self.Btn_OK.setEnabled(True)
+        return
+              
 if __name__ == "__main__":
     #加载QT窗口
     app = QtWidgets.QApplication(sys.argv)
     cUpdate = CUpdate()
+    cUpdate.Update()
     sys.exit(app.exec_())

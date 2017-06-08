@@ -1,7 +1,7 @@
 # -*- coding : utf-8 -*-
 
 import os, sys, subprocess
-import urllib
+import urllib.request
 import threading
 from PyQt5 import QtCore, QtWidgets
 from updateUI import *
@@ -109,6 +109,7 @@ class CUpdate(QtWidgets.QDialog, Ui_Dialog):
                 self.__UpdateSelf()
                 #写入版本文件
                 self.__UpdateVersion = Version[1]
+				#self.__WriteLocalVersion()
             #更新AddWork
             elif (-1 != VersionInfo.find("AddWork")):
                 Version = VersionInfo.split('=')
@@ -120,9 +121,8 @@ class CUpdate(QtWidgets.QDialog, Ui_Dialog):
                 self.__UpdateAddwork(Version[1])
                 #写入版本文件
                 self.__AddWorkVersion = Version[1]
+				#self.__WriteLocalVersion()
         
-        #TODO：更新版本文件
-        #self.__WriteLocalVersion()
         #退出更新程序
         if (False == self.__bShow):
             sys.exit()

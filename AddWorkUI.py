@@ -12,6 +12,7 @@ class Ui_AddWorkWindow(object):
     def setupUi(self, AddWorkWindow):
         AddWorkWindow.setObjectName("AddWorkWindow")
         AddWorkWindow.resize(374, 293)
+        AddWorkWindow.setFixedSize(AddWorkWindow.width(), AddWorkWindow.height()); 
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)

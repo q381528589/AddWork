@@ -4,9 +4,29 @@ from PyQt5 import QtWidgets
 from AddWork import *
 from ConfigFileIO import CFileMng, CConfig
 from DESCode import CDESCode
-import logging
+import os, logging, subprocess
 
-Version = "2.0.0"
+class CUpdateApp:
+    def __init__(self):
+        pass
+    
+    def StartUpdate(self):
+        #覆盖更新
+        if (os.path.exists("./update.exe.tmp")):
+            #移除旧版update程序
+            if (os.path.exists("./update.exe")):
+                os.remove("./update.exe")
+            #重命名
+            os.rename("./update.exe.tmp", "./update.exe")
+            
+        #启动程序
+        try:
+            subprocess.check_call("./update.exe")
+        except:
+            logging.critical("没有找到有效的更新程序")
+            return
+        
+        return
     
 if __name__ == '__main__':
     #加解密算法
@@ -27,6 +47,10 @@ if __name__ == '__main__':
     #读取配置文件
     if (0 == cConfig.ReadFile()):
         bReadFile = True
+    
+    #启动update
+    cApp = CUpdateApp()
+    cApp.StartUpdate()
     
     #加载QT登录主窗口
     app = QtWidgets.QApplication(sys.argv)

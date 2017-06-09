@@ -11,13 +11,12 @@ DOWNLOAD_PATH = "https://raw.githubusercontent.com/q381528589/Publisher/master/A
 
 class CDownload(threading.Thread):
     Percent = 0
-    ThreadStatus = False
+    bDownload = False
     
     def __init__(self):
         super(CDownload, self).__init__()
         
     def run(self):
-        self.ThreadStatus = True
         self.__HandleAddwork()
         return
 
@@ -36,19 +35,8 @@ class CDownload(threading.Thread):
         #获取网络上最新版本
         try:
             urllib.request.urlretrieve(DOWNLOAD_PATH+"AddWork.exe", "./AddWork.exe.download", self.Schedule)
-#             r = requests.get(DOWNLOAD_PATH+"AddWork.exe", stream=True)
-#             File = open("./AddWork.exe.download", "wb")
-#             for chunk in r.iter_content(chunk_size=1024):
-#                 if chunk:
-#                     File.write(chunk)
-#             File.close()
-#       try:
-#           f = urllib.request.urlopen(DOWNLOAD_PATH+"AddWork.exe")
-#           data = f.read()
-#           f.close()
         except:
             print ("获取更新程序失败")
-            self.ThreadStatus = False
             return
         
         #关闭程序
@@ -63,7 +51,8 @@ class CDownload(threading.Thread):
             os.remove("./AddWork.exe")
         os.rename("./AddWork.exe.download", "./AddWork.exe")
         
-        self.ThreadStatus = False
+        #下载更新完成
+        self.bDownload = True
         return
     
 class CUpdate(QtWidgets.QDialog, Ui_Dialog):
@@ -109,7 +98,7 @@ class CUpdate(QtWidgets.QDialog, Ui_Dialog):
                 self.__UpdateSelf()
                 #写入版本文件
                 self.__UpdateVersion = Version[1]
-				#self.__WriteLocalVersion()
+                self.__WriteLocalVersion()
             #更新AddWork
             elif (-1 != VersionInfo.find("AddWork")):
                 Version = VersionInfo.split('=')
@@ -121,7 +110,6 @@ class CUpdate(QtWidgets.QDialog, Ui_Dialog):
                 self.__UpdateAddwork(Version[1])
                 #写入版本文件
                 self.__AddWorkVersion = Version[1]
-				#self.__WriteLocalVersion()
         
         #退出更新程序
         if (False == self.__bShow):
@@ -153,7 +141,19 @@ class CUpdate(QtWidgets.QDialog, Ui_Dialog):
                 self.__AddWorkVersion = Version[1]
         
         return
-                
+    
+    def __WriteLocalVersion(self):
+        szTemp = "update=%s\n" % (self.__UpdateVersion)
+        szTemp += "AddWork=%s" % (self.__AddWorkVersion)
+        try:
+            File = open("./version.txt", 'w')
+            File.write(szTemp)
+            File.close()
+        except IOError as err:
+            print ("写入文件错误：%s" % (str(err)))
+            
+        return
+        
     def __CheckVersion(self, OldVersion, NewVersion):
         OldList = OldVersion.split('.')
         NewList = NewVersion.split('.')
@@ -199,7 +199,7 @@ class CUpdate(QtWidgets.QDialog, Ui_Dialog):
         return
     
     def __UpdateProcessBar(self):
-        while (True == self.__cDownload.ThreadStatus):  
+        while (True == self.__cDownload.isAlive()):  
             self.progressBar.setValue(self.__cDownload.Percent)  
             QtCore.QThread.msleep(100)
             QtWidgets.QApplication.processEvents()
@@ -214,12 +214,17 @@ class CUpdate(QtWidgets.QDialog, Ui_Dialog):
     
     def __StartDownload(self):
         self.label.hide()
+        self.Btn_OK.setText(self.__translate("Dialog", "下载中……"))
+        self.Btn_Cancel.setText(self.__translate("Dialog", "取消"))
         self.Btn_OK.setEnabled(False)
         self.progressBar.show()
+        self.__cDownload.setDaemon(True)
         self.__cDownload.start()
         self.__UpdateProcessBar()
-        self.Btn_OK.clicked.connect(self.close)
-        self.Btn_OK.setEnabled(True)
+        self.Btn_OK.hide()
+        self.Btn_Cancel.setText(self.__translate("Dialog", "完成"))
+        if (True == self.__cDownload.bDownload):
+            self.__WriteLocalVersion()
         return
               
 if __name__ == "__main__":

@@ -46,11 +46,6 @@ class CDownload(threading.Thread):
             #TODO：用户手动关闭程序
             pass
         
-        #重命名文件
-        if (os.path.exists("./AddWork.exe")):
-            os.remove("./AddWork.exe")
-        os.rename("./AddWork.exe.download", "./AddWork.exe")
-        
         #下载更新完成
         self.bDownload = True
         return
@@ -64,6 +59,19 @@ class CUpdate(QtWidgets.QDialog, Ui_Dialog):
         super(CUpdate, self).__init__()
         self.setupUi(self)
         self.Btn_OK.clicked.connect(self.__StartDownload)
+    
+    def closeEvent(self, event):
+        #重命名文件
+        if (os.path.exists("./AddWork.exe")):
+            os.remove("./AddWork.exe")
+        os.rename("./AddWork.exe.download", "./AddWork.exe")
+        #写入版本文件
+        if (True == self.__cDownload.bDownload):
+            self.__WriteLocalVersion()
+        
+        #关闭窗口
+        event.accept()
+        return
     
     def Update(self):
         #是否需要更新
@@ -173,7 +181,7 @@ class CUpdate(QtWidgets.QDialog, Ui_Dialog):
         #svn版本号更新的不算在列
         return False
                 
-    def __UpdateSelf(self):
+    def __UpdateSelf(self):#TODO：多线程
         #静默更新
         #获取网络上最新版本
         try:

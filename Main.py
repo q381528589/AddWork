@@ -4,7 +4,7 @@ from PyQt5 import QtWidgets
 from AddWork import *
 from ConfigFileIO import CFileMng, CConfig
 from DESCode import CDESCode
-import os, logging, subprocess
+import os, logging
 
 class CUpdateApp:
     def __init__(self):
@@ -21,9 +21,13 @@ class CUpdateApp:
             
         #启动程序
         try:
-            subprocess.check_call("./update.exe")
+            import subprocess
+            from subprocess import Popen, PIPE
+            si = subprocess.STARTUPINFO()
+            si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            p = Popen([r'update.exe'], stdin=PIPE, stdout=PIPE, stderr=PIPE, cwd=os.getcwd(), startupinfo=si)
         except:
-            logging.critical("没有找到有效的更新程序")
+            logging.critical("执行更新程序失败")
             return
         
         return

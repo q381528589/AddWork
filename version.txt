@@ -1,2 +1,2 @@
-update=0.2.0.36
-AddWork=1.0.2.32
+update=1.0.0.45
+AddWork=2.1.0.45

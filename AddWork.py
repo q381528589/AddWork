@@ -11,11 +11,10 @@ from HttpInteraction import CHttp, CForm, CRegex, CMIME
 class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
     _translate = QtCore.QCoreApplication.translate
     _cConfig = None
+    #窗口加载类
+    _cLoadWindow = None
     
-    _cLogin = None
-    _cRegister = None
-    
-    def __init__(self, cConfig, bReadFile):
+    def __init__(self, cLoadWindow, cConfig):
         super(CAddWork, self).__init__()
         self.setupUi(self)
         self.Btn_Exit.clicked.connect(self.Exit)
@@ -23,28 +22,13 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
         self.Btn_ChgPsw.clicked.connect(self.ChangePsw)
         
         self._cConfig = cConfig
-        if (True == bReadFile):
-            self._ReadConfig(cConfig)
-        self._cLogin = CLogin(cConfig)
-        self._cRegister = CRegister(cConfig)
+        self._cLoadWindow = cLoadWindow
+            
+        #检查用户是否已报名
         
-        #根据具体情况决定是否显示界面
-        if (False == bReadFile):
-            #到注册界面
-            self.hide()
-            self._cRegister.Show(self)
-        elif (False == cConfig.bSkip):
-            #到登录界面
-            self.hide()
-            self._cLogin.Show(self, self._cConfig)
-        else:
-            #显示自己
-            self.Show(self._cConfig)
     
-    def Show(self, cConfig):
-        if (None != cConfig):
-            self._cConfig = cConfig
-            self._ReadConfig(cConfig)
+    def Show(self):
+        self._ReadConfig(self._cConfig)
         self.show()
         
     def Close(self):
@@ -64,8 +48,8 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
         
     def Exit(self):
         #到登录界面
+        self._cLoadWindow.ShowUI(1)
         self.hide()
-        self._cLogin.Show(self, self._cConfig)
     
     def AddWork(self):
         cHttp = CHttp()

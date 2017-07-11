@@ -6,19 +6,19 @@ from RegisterUI import *
 class CRegister(QtWidgets.QMainWindow, Ui_CRegister):
     _translate = QtCore.QCoreApplication.translate
     _cConfig = None
-    #主窗口
-    _cAddWork = None
+    #窗口加载类
+    _cLoadWindow = None
     
-    def __init__(self, cConfig):
+    def __init__(self, cLoadWindow, cConfig):
         super(CRegister, self).__init__()
         self.setupUi(self)
         self.Combo_Dinner.setCurrentIndex(0)
         self.Combo_Bus.setCurrentIndex(1)
         self.Btn_Regist.clicked.connect(self.Regist)
         self._cConfig = cConfig
+        self._cLoadWindow = cLoadWindow
 
-    def Show(self, cAddWork):
-        self._cAddWork = cAddWork
+    def Show(self):
         self.show()
         
     def Close(self):
@@ -90,8 +90,8 @@ class CRegister(QtWidgets.QMainWindow, Ui_CRegister):
         
         self.Label_Status.setText(self._translate("CRegister", "注册成功"))
         #跳转到主界面
+        self._cLoadWindow.ShowUI(2)
         self.hide()
-        self._cAddWork.Show(self._cConfig)
         
     def _CalcRegCode(self, SrcRegCode):
         RegCode = ""

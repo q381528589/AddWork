@@ -5,6 +5,7 @@ import hashlib
 from HttpInteraction import CHttp, CUnzip
 import urllib, base64
 import logging
+from builtins import int
 
 #配置文件类
 class CConfig:
@@ -27,6 +28,8 @@ class CConfig:
     _cCfgFile = None
     #加密算法类
     _cDes = None
+    #临时成员变量：是否更新加密文件
+    bUpdate = False
 
     #函数名称：CConfig::__init__
     #函数功能：构造函数
@@ -46,6 +49,88 @@ class CConfig:
         if None == FileText:
             logging.error("打开配置文件失败")
             return 1
+        
+        #V2版本解密
+        if ("V3" != FileText[0:2]):
+            nRet = self.V2Decrypt(FileText)
+        else:
+            nRet = self.V3Decrypt(FileText)
+
+        return nRet
+
+    #函数名称：CConfig::WriteFile
+    #函数功能：读取配置文件
+    #函数返回：0成功 1打开文件失败 2加密失败 3参数错误
+    #函数参数：无
+    #函数参数：无
+    def WriteFile(self):
+        #数据缓存
+        szTemp = ""
+        
+        #计算用户名的MD5
+        Md5Value = self.CalcMD5(self.UserName)
+        if (32 != len(Md5Value)):
+            logging.error("数据加密失败：MD5值长度不正确") 
+        
+        #用户数据编成字符串
+        Data = self.UserName + '-' + self.Password + '-'
+        if self.Dinner:
+            Data += '1-'
+        else:
+            Data += '0-'
+    
+        if self.Bus:
+            Data += '1-'
+        else:
+            Data += '0-'
+        Data += self.Reason
+        
+        #跳过密码字段
+        szSkip = '1' if self.bSkip else '0'
+        Data = Data + '-' + szSkip
+        
+        try:    
+            EncryptData = self._cDes.Encrypt(Data, Md5Value)
+            if (None == EncryptData):
+                logging.error("数据加密失败：导入的MD5值不正确")
+                return 2
+        except:
+            logging.error("数据加密失败：未知原因")
+            return 2
+        
+        #整理
+        szTemp = 'V3' + '032' + Md5Value
+        EncryptDataLen = len(EncryptData)
+        if (EncryptDataLen < 10):
+            szTemp = szTemp + '00' + str(EncryptDataLen)
+        elif (EncryptDataLen < 100):
+            szTemp = szTemp + '0' + str(EncryptDataLen)
+        elif (EncryptDataLen >= 1000):
+            return 3
+        szTemp += EncryptData.decode()
+        
+        #写入文件
+        if (False == self._cCfgFile.WriteTextFile(szTemp)):
+            return 1
+        
+        return 0
+
+    #函数名称：CConfig::CalcMD5
+    #函数功能：计算MD5
+    #函数返回：MD5值
+    #函数参数：Data    ：要计算的数据
+    def CalcMD5(self, Data):
+        #计算数据的MD5
+        cMD5 = hashlib.md5(Data.encode(encoding='utf-8'))
+        #cMD5.update(Data)
+        Md5Value = cMD5.hexdigest()
+        return Md5Value
+
+    #函数名称：CConfig::V2Decrypt
+    #函数功能：V2版本解密
+    #函数返回：解密后的消息
+    #函数参数：FileText：读取的文件内容
+    def V2Decrypt(self, FileText):
         #分割字串
         EncryptData = FileText.split(' ')
         if (3 > len(EncryptData)):
@@ -62,7 +147,7 @@ class CConfig:
                 return 2
         except:
             logging.error("数据解密失败：未知原因")
-            return 2           
+            return 2
         
         #对解密后的数据进行分割
         Couple = DecryptData.split('-')
@@ -95,65 +180,82 @@ class CConfig:
         if ('1' == EncryptData[2]):
             self.bSkip = True
     
+        self.bUpdate = True
         return 0
 
-    #函数名称：CConfig::WriteFile
-    #函数功能：读取配置文件
-    #函数返回：0成功 1打开文件失败 2加密失败 3参数错误
-    #函数参数：无
-    #函数参数：无
-    def WriteFile(self):
+    #函数名称：CConfig::V3Decrypt
+    #函数功能：V2版本解密
+    #函数返回：解密后的消息
+    #函数参数：FileText：读取的文件内容
+    def V3Decrypt(self, FileText):
         #数据缓存
-        szTemp = ""
+        szDataTemp = FileText
+        #长度字符串缓存
+        szLenTemp = ""
+        #后续数据长度
+        DataLen = 0
+        #MD5
+        szMD5 = ""
         
-        #计算用户名的MD5
-        Md5Value = self.CalcMD5(self.UserName)
+        #读取MD5数据长度
+        szDataTemp = szDataTemp[2: ]
+        szLenTemp = szDataTemp[0:3]
+        DataLen = int(szLenTemp)
+        if (32 != DataLen):
+            logging.error("数据解密失败：MD5长度不正确")
+            return 2
+        #读取MD5
+        szDataTemp = szDataTemp[3: ]
+        szMD5 = szDataTemp[0:DataLen]
+        #读取加密数据长度
+        szDataTemp = szDataTemp[DataLen: ]
+        szLenTemp = szDataTemp[0:3]
+        DataLen = int(szLenTemp)
         
-        #用户数据编成字符串
-        Data = self.UserName + '-' + self.Password + '-'
-        if self.Dinner:
-            Data += '1-'
-        else:
-            Data += '0-'
-    
-        if self.Bus:
-            Data += '1-'
-        else:
-            Data += '0-'
-        Data += self.Reason
-        
-        try:    
-            EncryptData = self._cDes.Encrypt(Data, Md5Value)
-            if (None == EncryptData):
-                logging.error("数据加密失败：导入的MD5值不正确")
+        #数据解密
+        szDataTemp = szDataTemp[3: ]
+        try:
+            DecryptData = self._cDes.Decrypt(szDataTemp[0:DataLen], szMD5)
+            if (None == DecryptData):
+                logging.error("数据解密失败：导入的MD5值不正确")
                 return 2
         except:
-            logging.error("数据加密失败：未知原因")
+            logging.error("数据解密失败：未知原因")
             return 2
         
-        #跳过密码字段
-        szSkip = '1' if self.bSkip else '0'
+        #对解密后的数据进行分割
+        Couple = DecryptData.split('-')
+        if 6 > len(Couple):
+            logging.error("数据解密失败：解密后的数据不符合要求")
+            return 2
+        self.UserName = Couple[0]
+        self.Password = Couple[1]
+        if '1' == Couple[2]:
+            self.Dinner = True
+        elif '0' == Couple[2]:
+            self.Dinner = False
+        else:
+            return 3
+    
+        if '1' == Couple[3]:
+            self.Bus = True
+        elif '0' == Couple[3]:
+            self.Bus = False
+        else:
+            return 3
+        self.Reason = Couple[4]
+        #验证用户名
+        Md5Value = self.CalcMD5(self.UserName)
+        if (Md5Value != szMD5):
+            logging.error("数据解密失败：MD5值校验不通过")
+            return 3
         
-        #整理
-        szTemp = Md5Value + " " + EncryptData.decode() + " " + szSkip
-        
-        #写入文件
-        if (False == self._cCfgFile.WriteTextFile(szTemp)):
-            return 1
-        
+        #是否跳过登录
+        if ('1' == Couple[5]):
+            self.bSkip = True
+    
         return 0
-
-    #函数名称：CConfig::CalcMD5
-    #函数功能：计算MD5
-    #函数返回：MD5值
-    #函数参数：Data    ：要计算的数据
-    def CalcMD5(self, Data):
-        #计算数据的MD5
-        cMD5 = hashlib.md5(Data.encode(encoding='utf-8'))
-        #cMD5.update(Data)
-        Md5Value = cMD5.hexdigest()
-        return Md5Value
-
+            
     #函数名称：CConfig::CheckUserPsw
     #函数功能：校验用户名和密码
     #函数返回：0正确 1参数错误 2网络错误 3用户名或密码错误

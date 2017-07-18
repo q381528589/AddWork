@@ -310,7 +310,10 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
             self._cConfig.Bus = (~Index)&0x01
             if (0 != self._cConfig.WriteFile()):
                 self._WriteStatus("修改加班班车字段失败：详情见日志")
-                        
+                       
+        #更新文件
+        if (True == self._cConfig.bUpdate):
+            self._cConfig.WriteFile()
         return False
             
     def _WriteStatus(self, szData):

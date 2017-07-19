@@ -61,13 +61,17 @@ class CUpdate(QtWidgets.QDialog, Ui_Dialog):
         self.Btn_OK.clicked.connect(self.__StartDownload)
     
     def closeEvent(self, event):
+        #如果没有更新成功，在直接退出
+        if (False == self.__cDownload.bDownload):
+            event.accept()
+            return
+        
         #重命名文件
         if (os.path.exists("./AddWork.exe")):
             os.remove("./AddWork.exe")
         os.rename("./AddWork.exe.download", "./AddWork.exe")
         #写入版本文件
-        if (True == self.__cDownload.bDownload):
-            self.__WriteLocalVersion()
+        self.__WriteLocalVersion()
         
         #关闭窗口
         event.accept()
@@ -82,8 +86,9 @@ class CUpdate(QtWidgets.QDialog, Ui_Dialog):
         __AddWorkVersion="0.0.0.0"
         
         #获取自身版本号和其它版本号
-        self.__ReadLocalVersion()
-        if (""==self.__UpdateVersion or ""==self.__AddWorkVersion):
+        if (0 != self.__ReadLocalVersion()):
+            #TODO：后期版本更新：文件不存在时校验MD5，两者均相同下载version.txt，否则执行后续更新步骤
+            print ("读取本地文件发生错误")
             sys.exit()
         #获取网络上最新版本号
         try:
@@ -132,7 +137,7 @@ class CUpdate(QtWidgets.QDialog, Ui_Dialog):
             File.close()
         except:
             print ("打开文件错误")
-            return
+            return -1
         
         for VersionInfo in List:
             #update版本
@@ -148,7 +153,7 @@ class CUpdate(QtWidgets.QDialog, Ui_Dialog):
                     continue
                 self.__AddWorkVersion = Version[1]
         
-        return
+        return 0
     
     def __WriteLocalVersion(self):
         szTemp = "update=%s\n" % (self.__UpdateVersion)
@@ -231,8 +236,6 @@ class CUpdate(QtWidgets.QDialog, Ui_Dialog):
         self.__UpdateProcessBar()
         self.Btn_OK.hide()
         self.Btn_Cancel.setText(self.__translate("Dialog", "完成"))
-        if (True == self.__cDownload.bDownload):
-            self.__WriteLocalVersion()
         return
               
 if __name__ == "__main__":

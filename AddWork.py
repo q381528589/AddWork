@@ -67,11 +67,9 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
         cHttp.SetReqHead("Connection", "Keep-Alive")
     
         #Step1：连接
-        self._WriteStatus("正在连接至服务器……")
         cHttp.Connect()
     
         #Step2：登录
-        self._WriteStatus("POST /logincheck.php")
         #编码
         UserName = self._cConfig.UserName.encode("GBK")
         Password = base64.b64encode(self._cConfig.Password.encode("utf-8"))
@@ -94,7 +92,7 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
             return
     
         #Step3：提取表单
-        self._WriteStatus("GET /general/workflow/new/edit.php?FLOW_ID=%s&AUTO_NEW=1" % (cForm.flow_id))
+        self._WriteStatus("正在新建表单……")
         cHttp.DelReqHead("Origin")
         cHttp.DelReqHead("Content-Type")
         if (False == cHttp.Send("GET", "/general/workflow/new/edit.php?FLOW_ID=%s&AUTO_NEW=1" % cForm.flow_id)):
@@ -112,7 +110,6 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
         elif (200 == AckCode):
             self._WriteStatus("新建表单失败，正在查找已有表单数据……")
             #请求数据
-            self._WriteStatus("GET /portal/personal/workflow.php")
             ReqUrl = "/portal/personal/workflow.php"
             if (False == cHttp.Send("GET", ReqUrl)):
                 self._WriteStatus("发送HTTP请求失败")
@@ -134,7 +131,7 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
                 self._WriteStatus("没有找到有效表单")
                 cHttp.Close()
                 return
-            self._WriteStatus("查找成功，正在执行后续步骤……")
+            self._WriteStatus("查找成功，执行后续步骤……")
         else:
             self._WriteStatus("HTTP错误：%d" % (AckCode))
             cHttp.Close()
@@ -145,7 +142,7 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
         cForm.flow_prcs = cRegex.Match(r'FLOW_PRCS=(.*?)', pszUrlTemp, 1)
         #cForm.prcs_key_id = cRegex.Match(r'PRCS_KEY_ID=(.*)', pszUrlTemp, 1)
         if (None==cForm.run_id or None==cForm.prcs_id or None==cForm.flow_prcs):
-            self._WriteStatus("数据错误：正则表达式没有匹配到数据")
+            self._WriteStatus("数据错误：无法获取表单数据")
             return
         
         #Step4：继续获取表单
@@ -171,7 +168,7 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
         cForm.prcs_key_id = cRegex.Match(r"prcs_key_id.*?= \'(.*?)\',", AckBody, 1)
         cForm.run_name = cRegex.Match(r"en_run_name.*?=[\s\S]*?run_name.*?= \"(.*?)\"", AckBody, 1)
         if (None == cForm.run_name):
-            self._WriteStatus("数据错误：正则表达式没有匹配到数据")
+            self._WriteStatus("数据错误：无法获取表单数据")
             cHttp.Close()
             return
         cForm.run_name = urllib.parse.unquote(cForm.run_name)
@@ -179,7 +176,7 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
         cForm.data_70 = cRegex.Match(r'（(.*?)）(.*?)-(.*)', cForm.run_name, 2)
         cForm.data_68 = cRegex.Match(r'（(.*?)）(.*?)-(.*)', cForm.run_name, 3)
         if None==cForm.data_70 or None==cForm.data_68:
-            self._WriteStatus("数据错误：正则表达式没有匹配到数据")
+            self._WriteStatus("数据错误：无法获取表单数据")
             return
         #填写加班基本参数
         #TIME
@@ -200,7 +197,6 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
     
         #Step5：提交当前用户名
         cHttp.SetReqHead("Origin", "http://do.sanhuid.com")
-        self._WriteStatus("POST /general/workflow/list/input_form/run_name_submit.php")
         if (False == cHttp.Send("POST", "/general/workflow/list/input_form/run_name_submit.php", "")):
             self._WriteStatus("发送HTTP请求失败")
             cHttp.Close()
@@ -215,7 +211,6 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
         cHttp.SetReqHead("Cache-Control", "max-age=0")
         cHttp.SetReqHead("Upgrade-Insecure-Requests", "1")
         cHttp.SetReqHead("Content-Type", "multipart/form-data; boundary=%s" % cMime.boundary)
-        self._WriteStatus("POST /general/workflow/list/input_form/input_submit.php")
         if (False == cHttp.Send("POST", "/general/workflow/list/input_form/input_submit.php", cMime.AssembleMimeData(False, cForm).encode("GBK"))):
             self._WriteStatus("发送HTTP请求失败")
             cHttp.Close()
@@ -238,7 +233,6 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
             return
     
         #Step7：第二次提交表单
-        self._WriteStatus("POST /general/workflow/list/input_form/input_submit.php")
         if (False == cHttp.Send("POST", "/general/workflow/list/input_form/input_submit.php", cMime.AssembleMimeData(True, cForm).encode("GBK"))):
             self._WriteStatus("发送HTTP请求失败")
             cHttp.Close()
@@ -253,7 +247,6 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
         #获取当前时间的毫秒时间戳
         CurMillTime = int(time.time()*1000)
         ReqBody = "_search=false&nd=%s&rows=10&page=1&sidx=run_id&sord=desc" % CurMillTime
-        self._WriteStatus("POST /general/workflow/list/data/getdata.php?pageType=todo")
         if (False == cHttp.Send("POST", "/general/workflow/list/data/getdata.php?pageType=todo", ReqBody.encode("GBK"))):
             self._WriteStatus("发送HTTP请求失败")
             cHttp.Close()

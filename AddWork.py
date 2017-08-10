@@ -8,9 +8,96 @@ from Register import CRegister
 import base64, urllib, time
 from HttpInteraction import CHttp, CForm, CRegex, CMIME
 
+#检查是否加班
+class CCheckAddWork:
+    #用户配置
+    __cConfig = None
+    #是否已加班
+    bAddWork = False
+    
+    def __init__(self, cConfig):
+        self.__cConfig = cConfig
+    
+    def Check(self):
+        cHttp = CHttp()
+        cRegex = CRegex()
+        #登录成功定义
+        SuccessStr = "正在进入OA系统，请稍候..."
+        
+        #检测数据有效性
+        if (None==self.__cConfig.UserName or None==self.__cConfig.Password or \
+                0==len(self.__cConfig.Reason)):
+            return
+        
+        #维持长链
+        cHttp.SetReqHead("Connection", "Keep-Alive")
+    
+        #Step1：连接
+        cHttp.Connect()
+    
+        #Step2：登录
+        #编码
+        UserName = self.__cConfig.UserName.encode("GBK")
+        Password = base64.b64encode(self.__cConfig.Password.encode("utf-8"))
+        #登录的交互过程
+        ReqBody = urllib.parse.urlencode({'UNAME': UserName, 'PASSWORD': Password, 'encode_type': 1})
+        if (False == cHttp.Send("POST", "/logincheck.php", ReqBody)):
+            self._WriteStatus("发送HTTP请求失败")
+            cHttp.Close()
+            return
+        AckCode, AckHead, AckBody = cHttp.Receive()
+        if 200 != AckCode:
+            self._WriteStatus("HTTP错误：%d" % (AckCode))
+            cHttp.Close()
+            return
+        #验证登录结果
+        Result = AckBody.find(SuccessStr)
+        if -1 == Result:
+            self._WriteStatus("用户名或密码错误")
+            cHttp.Close()
+            return
+        
+        #Step3:查询记录
+        #组装日期
+        cTime = time.localtime()
+        Date = "%s年" % (cTime.tm_year)
+        Date += str(cTime.tm_mon) if (cTime.tm_mon>=10) else ("0"+str(cTime.tm_mon))
+        Date += "月"
+        Date += str(cTime.tm_mday) if (cTime.tm_mday>=10) else ("0"+str(cTime.tm_mday))
+        Date += "日"
+        Date = urllib.request.quote(Date.encode("utf-8"))
+        ReqUrl = "/general/workflow/list/data/getdata.php?pageType=settles&searchType=adv&flow_id=131&run_name=%s" % (Date)
+        ReqBody = "_search=false&nd=%ld&rows=10&page=1&sidx=run_id&sord=desc" % (time.time()*1000)
+        if (False == cHttp.Send("POST", ReqUrl)):
+            self._WriteStatus("发送HTTP请求失败")
+            cHttp.Close()
+            return
+        AckCode, AckHead, AckBody = cHttp.Receive()
+        if (200 != AckCode):
+            self._WriteStatus("HTTP错误：%d" % (AckCode))
+            cHttp.Close()
+            return
+        
+        szRegexTemp = r"\{[\s]*\"records\"\:[\s]*\"([\d]+)\","
+        Result = cRegex.Match(szRegexTemp, AckBody.decode("GBK"), 1)
+        if (None == Result):
+            self._WriteStatus("查询加班记录失败")
+            cHttp.Close()
+            return
+        #已报名加班
+        if ('0' != Result):
+            self.bAddWork = True
+        
+        #Step4：关闭连接
+        cHttp.Close()
+        
+        return
+    
 class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
     _translate = QtCore.QCoreApplication.translate
     _cConfig = None
+    #确认加班
+    _cCheck = None
     #窗口加载类
     _cLoadWindow = None
     
@@ -25,6 +112,11 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
         self._cLoadWindow = cLoadWindow
             
         #检查用户是否已报名
+        self._cCheck = CCheckAddWork(cConfig)
+        self._cCheck.Check()
+        if (True == self._cCheck.bAddWork):
+            self.Btn_AddWork.setEnabled(False)
+            self.Btn_AddWork.setText(self._translate("AddWorkWindow", "已报名加班"))
         
     
     def Show(self):
@@ -269,6 +361,9 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
         #Step10:设置一键加班为disable
         self.Btn_AddWork.setEnabled(False)
         
+        #更新文件
+        if (True == self._cConfig.bUpdate):
+            self._cConfig.WriteFile()
         return
     
     def ChangePsw(self):

@@ -5,7 +5,7 @@ from PyQt5 import QtWidgets
 from AddWorkUI import *
 from Login import CLogin
 from Register import CRegister
-import base64, urllib, time
+import base64, urllib, urllib.request, time
 from HttpInteraction import CHttp, CForm, CRegex, CMIME
 
 #检查是否加班
@@ -42,18 +42,15 @@ class CCheckAddWork:
         #登录的交互过程
         ReqBody = urllib.parse.urlencode({'UNAME': UserName, 'PASSWORD': Password, 'encode_type': 1})
         if (False == cHttp.Send("POST", "/logincheck.php", ReqBody)):
-            self._WriteStatus("发送HTTP请求失败")
             cHttp.Close()
             return
         AckCode, AckHead, AckBody = cHttp.Receive()
         if 200 != AckCode:
-            self._WriteStatus("HTTP错误：%d" % (AckCode))
             cHttp.Close()
             return
         #验证登录结果
         Result = AckBody.find(SuccessStr)
         if -1 == Result:
-            self._WriteStatus("用户名或密码错误")
             cHttp.Close()
             return
         
@@ -69,19 +66,16 @@ class CCheckAddWork:
         ReqUrl = "/general/workflow/list/data/getdata.php?pageType=settles&searchType=adv&flow_id=131&run_name=%s" % (Date)
         ReqBody = "_search=false&nd=%ld&rows=10&page=1&sidx=run_id&sord=desc" % (time.time()*1000)
         if (False == cHttp.Send("POST", ReqUrl)):
-            self._WriteStatus("发送HTTP请求失败")
             cHttp.Close()
             return
         AckCode, AckHead, AckBody = cHttp.Receive()
         if (200 != AckCode):
-            self._WriteStatus("HTTP错误：%d" % (AckCode))
             cHttp.Close()
             return
         
         szRegexTemp = r"\{[\s]*\"records\"\:[\s]*\"([\d]+)\","
         Result = cRegex.Match(szRegexTemp, AckBody.decode("GBK"), 1)
         if (None == Result):
-            self._WriteStatus("查询加班记录失败")
             cHttp.Close()
             return
         #已报名加班

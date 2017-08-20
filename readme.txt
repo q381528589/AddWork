@@ -12,7 +12,7 @@
 常用命令：
 UI文件转py文件：pyuic5 -o xxx.py xxx.ui
 编译主程序命令:
-	pyinstaller -p "D:\Program Files\Python36\Lib\site-packages\PyQt5\Qt\bin" -w -F Main.py
+	pyinstaller -p "D:\Program Files\Python36\Lib\site-packages\PyQt5\Qt\bin" --version-file="./Version_Info.txt" -w -F Main.py
 	找到相对目录下的/dist文件夹，重命名Main.exe文件：rename Main.exe AddWork.exe
 编译更新程序命令：
 	pyinstaller -p "D:\Program Files\Python36\Lib\site-packages\PyQt5\Qt\bin" -w -F update.py

@@ -9,6 +9,11 @@ class CRegister(QtWidgets.QMainWindow, Ui_CRegister):
     #窗口加载类
     _cLoadWindow = None
     
+    #函数名称：CRegister::__init__
+    #函数功能：构造函数，用于构造注册窗口
+    #函数返回：无
+    #函数参数：cLoadWindow    所有窗口指针
+    #函数参数：cConfig      用户基础配置
     def __init__(self, cLoadWindow, cConfig):
         super(CRegister, self).__init__()
         self.setupUi(self)
@@ -18,16 +23,32 @@ class CRegister(QtWidgets.QMainWindow, Ui_CRegister):
         self._cConfig = cConfig
         self._cLoadWindow = cLoadWindow
 
+    #函数名称：CRegister::Show
+    #函数功能：显示注册窗口
+    #函数返回：无
+    #函数参数：无
     def Show(self):
         self.show()
         
+    #函数名称：CRegister::Close
+    #函数功能：关闭注册窗口
+    #函数返回：无
+    #函数参数：无
     def Close(self):
         self.close()
         
+    #函数名称：CRegister::keyPressEvent
+    #函数功能：出发键盘事件
+    #函数返回：无
+    #函数参数：e    按键事件
     def keyPressEvent(self, e):
         if e.key() == QtCore.Qt.Key_Enter:
             self.Regist()
-            
+
+    #函数名称：CRegister::Regist
+    #函数功能：注册用户
+    #函数返回：无
+    #函数参数：无  
     def Regist(self):
         self._cConfig.UserName = self.Text_User.text()
         if (None==self._cConfig.UserName or ""==self._cConfig.UserName):
@@ -92,7 +113,18 @@ class CRegister(QtWidgets.QMainWindow, Ui_CRegister):
         #跳转到主界面
         self._cLoadWindow.ShowUI(2)
         self.hide()
-        
+
+    #函数名称：CRegister::Update
+    #函数功能：更新程序
+    #函数返回：无
+    #函数参数：无          
+    def Update(self):
+        return
+
+    #函数名称：CRegister::_CalcRegCode
+    #函数功能：计算注册码的正确性
+    #函数返回：True正确    False错误
+    #函数参数：SrcRegCode    待验证的注册码
     def _CalcRegCode(self, SrcRegCode):
         RegCode = ""
         

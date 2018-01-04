@@ -6,7 +6,9 @@ from Login import *
 from AddWork import *
 from ConfigFileIO import CFileMng, CConfig
 from DESCode import CDESCode
+from time import sleep
 import os, logging
+import threading
 
 #启动自动更新程序
 class CUpdateApp:
@@ -48,6 +50,31 @@ class CUpdateApp:
         
         return
 
+#更新接口
+class CUpdate(threading.Thread):
+    __bRunning = True
+    #主函数app接口
+    __cMainApp = None
+    
+    def __init__(self, cMainApp):
+        super(CUpdate, self).__init__()
+        if (None == cMainApp):
+            logging.critical("主启动程序不能为空指针")
+            exit(0)
+        self.__cMainApp = cMainApp
+        
+    def run(self):
+        while (self.__bRunning == True):
+            #启动各个窗口的更新程序
+            if (None != self.__cMainApp.m_pcRegister):
+                self.__cMainApp.m_pcRegister.Update()
+            if (None != self.__cMainApp.m_pcLogin):
+                self.__cMainApp.m_pcLogin.Update()
+            if (None != self.__cMainApp.m_pcAddWork):
+                self.__cMainApp.m_pcAddWork.Update()
+            #每次更新间隔1秒
+            sleep(1)
+            
 #主程序，用于加载窗口
 class CMain:
     #用户配置
@@ -60,6 +87,8 @@ class CMain:
     m_pcAddWork = None
     #修改密码界面
     m_pcChangePsw = None
+    #自动更新类
+    m_pcUpdate = None
     
     #函数名称：CMain::__init__
     #函数功能：构造函数，根据初始配置决定加载哪个界面
@@ -68,6 +97,8 @@ class CMain:
     #函数参数：cConfig      用户基础配置
     def __init__(self, bReadFile, cConfig):
         self.m_cConfig = cConfig
+        self.m_pcUpdate = CUpdate(self)
+        
         #注册界面
         if (False == bReadFile):
             self.m_pcRegister = CRegister(self, cConfig)
@@ -80,6 +111,10 @@ class CMain:
         else:
             self.m_pcAddWork = CAddWork(self, cConfig)
             self.m_pcAddWork.Show()
+            
+        #启动自动更新
+        self.m_pcUpdate.setDaemon(True)
+        self.m_pcUpdate.start()
     
     #函数名称：CMain::ShowUI
     #函数功能：显示UI界面
@@ -103,6 +138,7 @@ class CMain:
             return -1
         
         return 0
+
         
 if __name__ == '__main__':
     #加解密算法

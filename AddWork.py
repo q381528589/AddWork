@@ -87,6 +87,7 @@ class CCheckAddWork:
         
         return
     
+    
 class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
     _translate = QtCore.QCoreApplication.translate
     _cConfig = None
@@ -106,11 +107,8 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
         self._cLoadWindow = cLoadWindow
             
         #检查用户是否已报名
-        self._cCheck = CCheckAddWork(cConfig)
-        self._cCheck.Check()
-        if (True == self._cCheck.bAddWork):
-            self.Btn_AddWork.setEnabled(False)
-            self.Btn_AddWork.setText(self._translate("AddWorkWindow", "已报名加班"))
+        self.Btn_AddWork.setEnabled(False)
+        self.Btn_AddWork.setText(self._translate("AddWorkWindow", "正在检查"))
         
     
     def Show(self):
@@ -120,6 +118,21 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
     def Close(self):
         self.close()
     
+    def Update(self):
+        #构造加班检查类
+        if (None == self._cCheck):
+            #检查用户是否报名
+            self._cCheck = CCheckAddWork(self._cConfig)
+            self._cCheck.Check()
+            if (True == self._cCheck.bAddWork):
+                self.Btn_AddWork.setEnabled(False)
+                self.Btn_AddWork.setText(self._translate("AddWorkWindow", "已报名加班"))
+            else:
+                self.Btn_AddWork.setEnabled(True)
+                self.Btn_AddWork.setText(self._translate("AddWorkWindow", "一键加班"))
+                
+        return
+        
     def _ReadConfig(self, cConfig):
         #显示用户名
         self.Label_CurUser.setText(self._translate("AddWorkWindow", "%s" % (cConfig.UserName)))
@@ -185,7 +198,7 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
             self._WriteStatus("发送HTTP请求失败")
             cHttp.Close()
             return
-        self._WriteStatus("发送HTTP请求成功")
+        self._WriteStatus("请求成功")
         AckCode, AckHead, AckBody = cHttp.Receive()
         #验证表单数据
         pszUrlTemp = None
@@ -240,7 +253,6 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
             SplitList = pszUrlTemp.split("../")
             ReqUrl = "/general/workflow/" + SplitList[len(SplitList)-1]
 
-        self._WriteStatus("GET %s" % (ReqUrl))
         if (False == cHttp.Send("GET", ReqUrl)):
             self._WriteStatus("发送HTTP请求失败")
             cHttp.Close()
@@ -344,7 +356,7 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
             return
     
         #打印日志
-        self._WriteStatus("一键加班脚本执行完成，请登录网页查看具体信息")
+        self._WriteStatus("\n一键加班脚本执行完成，请登录网页查看具体信息")
         self._WriteStatus("加班信息：")
         self._WriteStatus("加班时间：%s %s" % (cForm.data_91, cForm.data_67))
         self._WriteStatus("姓名：%s, 部门：%s, 加班餐：%s, 班车：%s, 加班理由：%s" % (cForm.data_68, cForm.data_70, cForm.data_89, cForm.data_90, cForm.data_73))

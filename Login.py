@@ -91,6 +91,13 @@ class CLogin(QtWidgets.QMainWindow, Ui_LoginWindow):
         self._cLoadWindow.ShowUI(2)
         self.hide()
 
+    #函数名称：CLogin::Update
+    #函数功能：更新程序
+    #函数返回：无
+    #函数参数：无
+    def Update(self):
+        return 
+    
     #函数名称：CLogin::_VerifyPsw
     #函数功能：远程校验密码
     #函数返回：True成功 False失败

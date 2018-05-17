@@ -105,7 +105,11 @@ class CConfig:
             szTemp = szTemp + '00' + str(EncryptDataLen)
         elif (EncryptDataLen < 100):
             szTemp = szTemp + '0' + str(EncryptDataLen)
-        elif (EncryptDataLen >= 1000):
+        elif (EncryptDataLen < 1000):
+            szTemp = szTemp + str(EncryptDataLen)
+        #数据超过预期长度
+        else:
+            logging.error("数据超过预期长度，请精简加班理由")
             return 3
         szTemp += EncryptData.decode()
         

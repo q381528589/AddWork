@@ -47,8 +47,8 @@ class CDESCode:
     #函数参数：EncData    ：原始数据
     #函数参数：UserMD5    ：用户名的MD5    
     def Decrypt(self, EncData, UserMD5):
-        #查找'\0'的索引值
-        Index = 0
+        #是否去除'\0'
+        bEnd = False
         #解密后的数据
         DecData = ""
         
@@ -74,9 +74,10 @@ class CDESCode:
         for Index in range (0, len(d1), 1):
             if ('\0' == d1[Index]):
                 DecData = d1[0:Index]
+                bEnd = True
                 break
         #没有多余的'\0'
-        if (Index == len(d1)-1):
+        if (False == bEnd):
             DecData = d1
         
         return DecData

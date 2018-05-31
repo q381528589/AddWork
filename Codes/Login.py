@@ -2,7 +2,7 @@
 
 import sys
 from PyQt5 import QtWidgets
-from LoginUI import *
+from UI.LoginUI import *
 
 #登录窗口
 class CLogin(QtWidgets.QMainWindow, Ui_LoginWindow):

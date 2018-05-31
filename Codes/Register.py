@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from PyQt5 import QtWidgets
-from RegisterUI import *
+from UI.RegisterUI import *
 
 class CRegister(QtWidgets.QMainWindow, Ui_CRegister):
     _translate = QtCore.QCoreApplication.translate

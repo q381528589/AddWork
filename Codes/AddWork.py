@@ -2,7 +2,7 @@
 
 import sys
 from PyQt5 import QtWidgets
-from AddWorkUI import *
+from UI.AddWorkUI import *
 from Login import CLogin
 from Register import CRegister
 import base64, urllib, urllib.request, time
@@ -37,7 +37,7 @@ class CCheckAddWork:
     
         #Step2：登录
         if (False == cHttp.ValidCookie()):
-            nRet = self.__cConfig.CheckUserPsw()
+            nRet = self.__cConfig.CheckUserPsw(self.__cConfig.UserName, self.__cConfig.Password)
             if (0 != nRet):
                 cHttp.Close()
                 return
@@ -160,19 +160,17 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
     
         #Step2：登录
         if (False == cHttp.ValidCookie()):
-            nRet = self.__cConfig.CheckUserPsw()
+            nRet = self.__cConfig.CheckUserPsw(self.__cConfig.UserName, self.__cConfig.Password)
             if (0 != nRet):
                 self._WriteStatus(LogErrMsg[nRet])
     
         #Step3：提取表单
-        self._WriteStatus("正在新建表单……")
         cHttp.DelReqHead("Origin")
         cHttp.DelReqHead("Content-Type")
         if (False == cHttp.Send("GET", "/general/workflow/new/edit.php?FLOW_ID=%s&AUTO_NEW=1" % cForm.flow_id)):
             self._WriteStatus("发送HTTP请求失败")
             cHttp.Close()
             return
-        self._WriteStatus("请求成功")
         AckCode, AckHead, AckBody = cHttp.Receive()
         #验证表单数据
         pszUrlTemp = None

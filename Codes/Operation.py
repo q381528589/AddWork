@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import urllib, base64
 import urllib.request
 import time
@@ -29,6 +30,7 @@ class CError:
     #函数参数：nRet    ：错误码
     def GetErrMsg(self, nRet):
         if (nRet >= len(self.__m_ErrStr)):
+            logging.error("传入的返回值错误")
             return "传入的返回值错误"
         return self.__m_ErrStr[nRet]
     
@@ -73,6 +75,7 @@ class COperation:
             return 2
         AckCode, AckHead, AckBody = self.__m_cHttp.Receive()
         if (200 != AckCode):
+            logging.error("HTTP 应答码:%d 不是系统需要的" % (AckCode))
             self.__m_cHttp.Close()
             return 2
 
@@ -120,6 +123,7 @@ class COperation:
             return 2
         AckCode, AckHead, AckBody = self.__m_cHttp.Receive()
         if (200 != AckCode):
+            logging.error("HTTP 应答码:%d 不是系统需要的" % (AckCode))
             self.__m_cHttp.Close()
             return 2
         
@@ -173,6 +177,7 @@ class COperation:
                     pszUrlTemp = HeadType[1]
         elif (200 == AckCode):
             if (False == bExist):
+                logging.info("表单已存在，需要进一步执行查找表单操作")
                 return 5
             
             #请求数据
@@ -181,6 +186,7 @@ class COperation:
                 return 2
             AckCode, AckHead, AckBody = self.__m_cHttp.Receive()
             if (200 != AckCode):
+                logging.error("HTTP 应答码:%d 不是系统需要的" % (AckCode))
                 return 2
             #获取当前系统时间
             cTime = time.localtime()
@@ -190,6 +196,7 @@ class COperation:
             szRegexTemp += ".*?-%s" % self._cConfig.UserName
             pszUrlTemp = self.__m_cRegex.Match(szRegexTemp, AckBody, 1)
             if (None == pszUrlTemp):
+                logging.error("正则表达式没有匹配到数据")
                 return 6
         else:
             return 2
@@ -215,17 +222,20 @@ class COperation:
             return 2
         AckCode, AckHead, AckBody = self.__m_cHttp.Receive()
         if (200 != AckCode):
+            logging.error("HTTP 应答码:%d 不是系统需要的" % (AckCode))
             return 2
         #根据正则表达式填写表单
         cForm.prcs_key_id = self.__m_cHttp.Match(r"prcs_key_id.*?= \'(.*?)\',", AckBody, 1)
         cForm.run_name = self.__m_cRegex.Match(r"en_run_name.*?=[\s\S]*?run_name.*?= \"(.*?)\"", AckBody, 1)
         if (None == cForm.run_name):
+            logging.error("正则表达式没有匹配到有效的表单数据")
             return 6
         cForm.run_name = urllib.parse.unquote(cForm.run_name)
         cForm.run_name_old = cForm.run_name
         cForm.data_70 = self.__m_cRegex.Match(r'（(.*?)）(.*?)-(.*)', cForm.run_name, 2)
         cForm.data_68 = self.__m_cRegex.Match(r'（(.*?)）(.*?)-(.*)', cForm.run_name, 3)
         if None==cForm.data_70 or None==cForm.data_68:
+            logging.error("正则表达式没有匹配到有效的表单数据")
             return 6
         #填写加班基本参数
         #TIME
@@ -251,6 +261,7 @@ class COperation:
             return 2
         AckCode, AckHead, AckBody = self.__m_cHttp.Receive()
         if (200 != AckCode):
+            logging.error("HTTP 应答码:%d 不是系统需要的" % (AckCode))
             return 2
     
         #Step6：加班申请，组装Body数据
@@ -262,13 +273,16 @@ class COperation:
             return 2
         AckCode, AckHead, AckBody = self.__m_cHttp.Receive()
         if (200 != AckCode):
+            logging.error("HTTP 应答码:%d 不是系统需要的" % (AckCode))
             return 2
         #警告标志
         Alert = self.__m_cRegex.Match(r'alert\("(.*?)"\)', AckBody, 1, False)
         if None != Alert:
+            logging.error("正则表达式没有匹配到有效的表单数据")
             return 6
         #转交成功标志
         if None == AckBody.find(r"\u8f6c\u4ea4\u6210\u529f"):
+            logging.error("没有找到转交成功的标志: \u8f6c\u4ea4\u6210\u529f")
             return 6
     
         #Step7：第二次提交表单
@@ -277,6 +291,7 @@ class COperation:
             return 2
         AckCode, AckHead, AckBody = self.__m_cHttp.Receive()
         if (200 != AckCode):
+            logging.error("HTTP 应答码:%d 不是系统需要的" % (AckCode))
             return 2
         
         #Step8：确认加班
@@ -288,6 +303,7 @@ class COperation:
             return 2
         AckCode, AckHead, AckBody = self.__m_cHttp.Receive()
         if (200 != AckCode):
+            logging.error("HTTP 应答码:%d 不是系统需要的" % (AckCode))
             return 2
     
         return 0

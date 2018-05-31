@@ -11,19 +11,22 @@ class CLogin(QtWidgets.QMainWindow, Ui_LoginWindow):
     _cConfig = None
     #窗口加载类
     _cLoadWindow = None
+    #操作类
+    _cOperation = None
 
     #函数名称：CLogin::__init__
     #函数功能：构造函数
     #函数返回：无
-    #函数参数：cConfig    ：配置文件
     #函数参数：cLoadWindow：加载窗口类
-    def __init__(self, cLoadWindow, cConfig):
+    #函数参数：cConfig    ：配置文件
+    #函数参数：cHttp      ：HTTP交互类
+    def __init__(self, cLoadWindow, cConfig, cOpertation):
         super(CLogin, self).__init__()
         self.setupUi(self)
         self.Btn_Login.clicked.connect(self.Login)
-        
         self._cConfig = cConfig
         self._cLoadWindow = cLoadWindow
+        self._cOperation = cOpertation
         self.Label_ShowUser.setText(self._translate("LoginWindow", cConfig.UserName))
 
 
@@ -103,7 +106,7 @@ class CLogin(QtWidgets.QMainWindow, Ui_LoginWindow):
     #函数返回：True成功 False失败
     #函数参数：Password    :需要验证的密码
     def _VerifyPsw(self, Password):
-        nRet = self._cConfig.CheckUserPsw(self._cConfig.UserName, Password)
+        nRet = self._cOperation.CheckUserPsw(self._cConfig.UserName, Password)
         if (0 == nRet):
             return True
         elif (1 == nRet):

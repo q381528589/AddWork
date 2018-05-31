@@ -5,16 +5,22 @@ from UI.RegisterUI import *
 
 class CRegister(QtWidgets.QMainWindow, Ui_CRegister):
     _translate = QtCore.QCoreApplication.translate
+    #配置文件
     _cConfig = None
+    #Http
+    _cHttp = None
     #窗口加载类
     _cLoadWindow = None
+    #操作类
+    _cOperation = None
     
     #函数名称：CRegister::__init__
     #函数功能：构造函数，用于构造注册窗口
     #函数返回：无
     #函数参数：cLoadWindow    所有窗口指针
-    #函数参数：cConfig      用户基础配置
-    def __init__(self, cLoadWindow, cConfig):
+    #函数参数：cConfig        用户基础配置
+    #函数参数：cHttp          HTTP交互类
+    def __init__(self, cLoadWindow, cConfig, cOperation):
         super(CRegister, self).__init__()
         self.setupUi(self)
         self.Combo_Dinner.setCurrentIndex(0)
@@ -22,7 +28,8 @@ class CRegister(QtWidgets.QMainWindow, Ui_CRegister):
         self.Btn_Regist.clicked.connect(self.Regist)
         self._cConfig = cConfig
         self._cLoadWindow = cLoadWindow
-
+        self._cOperation = cOperation
+        
     #函数名称：CRegister::Show
     #函数功能：显示注册窗口
     #函数返回：无
@@ -148,7 +155,7 @@ class CRegister(QtWidgets.QMainWindow, Ui_CRegister):
     #函数返回：True成功 False失败
     #函数参数：无 
     def _VerifyPsw(self):
-        nRet = self._cConfig.CheckUserPsw(self._cConfig.UserName, self._cConfig.Password)
+        nRet = self._cOperation.CheckUserPsw(self._cConfig.UserName, self._cConfig.Password)
         if (0 == nRet):
             return True
         elif (1 == nRet):

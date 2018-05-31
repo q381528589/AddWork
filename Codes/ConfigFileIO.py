@@ -2,8 +2,6 @@
 
 import os
 import hashlib
-from HttpInteraction import CHttp, CUnzip
-import urllib, base64
 import logging
 from builtins import int
 
@@ -258,45 +256,6 @@ class CConfig:
         if ('1' == Couple[5]):
             self.bSkip = True
     
-        return 0
-            
-    #函数名称：CConfig::CheckUserPsw
-    #函数功能：校验用户名和密码
-    #函数返回：0正确 1参数错误 2网络错误 3用户名或密码错误
-    #函数参数：UserName    :待验证的用户名
-    #函数参数：Password    :待验证的密码
-    def CheckUserPsw(self, UserName, Password):
-        #HTTP会话类
-        cHttp = CHttp()
-        #登录成功定义
-        SuccessStr = "正在进入OA系统，请稍候..."
-        
-        #验证数据有效性
-        if (None==UserName or None==Password or ""==UserName or ""==Password):
-            return 1
-        
-        #编码
-        UserName = UserName.encode("GBK")
-        Password = base64.b64encode(Password.encode("utf-8"))
-        
-        #登录的交互过程
-        cHttp.Connect()
-        ReqBody = urllib.parse.urlencode({'UNAME': UserName, 'PASSWORD': Password, 'encode_type': 1})
-        if (False == cHttp.Send("POST", "/logincheck.php", ReqBody)):
-            cHttp.Close()
-            return 2
-        AckCode, AckHead, AckBody = cHttp.Receive()
-        if 200 != AckCode:
-            cHttp.Close()
-            return 2
-
-        #验证登录结果
-        Result = AckBody.find(SuccessStr)
-        if -1 == Result:
-            cHttp.Close()
-            return 3
-        cHttp.Close()
-        
         return 0
 
                 

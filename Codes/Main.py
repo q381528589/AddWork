@@ -4,6 +4,7 @@ from PyQt5 import QtWidgets
 from Register import *
 from Login import *
 from AddWork import *
+from Operation import COperation
 from ConfigFileIO import CFileMng, CConfig
 from DESCode import CDESCode
 from time import sleep
@@ -79,6 +80,9 @@ class CUpdate(threading.Thread):
 class CMain:
     #用户配置
     m_cConfig = None
+    #操作类
+    m_cOperation = None
+    
     #注册界面
     m_pcRegister = None
     #登录界面
@@ -97,19 +101,20 @@ class CMain:
     #函数参数：cConfig      用户基础配置
     def __init__(self, bReadFile, cConfig):
         self.m_cConfig = cConfig
+        self.m_cOperation = COperation()
         self.m_pcUpdate = CUpdate(self)
         
         #注册界面
         if (False == bReadFile):
-            self.m_pcRegister = CRegister(self, cConfig)
+            self.m_pcRegister = CRegister(self, cConfig, self.m_cOperation)
             self.m_pcRegister.Show()
         #登录界面
         elif (False == cConfig.bSkip):
-            self.m_pcLogin = CLogin(self, cConfig)
+            self.m_pcLogin = CLogin(self, cConfig, self.m_cOperation)
             self.m_pcLogin.Show()
         #加班界面
         else:
-            self.m_pcAddWork = CAddWork(self, cConfig)
+            self.m_pcAddWork = CAddWork(self, cConfig, self.m_cOperation)
             self.m_pcAddWork.Show()
             
         #启动自动更新
@@ -123,15 +128,15 @@ class CMain:
     def ShowUI(self, UIIndex):
         if (0 == UIIndex):
             if (None == self.m_pcRegister):
-                self.m_pcRegister = CRegister(self, self.m_cConfig)
+                self.m_pcRegister = CRegister(self, self.m_cConfig, self.m_cOperation)
             self.m_pcRegister.Show()
         elif (1 == UIIndex):
             if (None == self.m_pcLogin):
-                self.m_pcLogin = CLogin(self, self.m_cConfig)
+                self.m_pcLogin = CLogin(self, self.m_cConfig, self.m_cOperation)
             self.m_pcLogin.Show()
         elif (2 == UIIndex):
             if (None == self.m_pcAddWork):
-                self.m_pcAddWork = CAddWork(self, self.m_cConfig)
+                self.m_pcAddWork = CAddWork(self, self.m_cConfig, self.m_cOperation)
             self.m_pcAddWork.Show()
         else:
             logging.error("没有找到有效的窗口界面")

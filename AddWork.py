@@ -36,23 +36,11 @@ class CCheckAddWork:
         cHttp.Connect()
     
         #Step2：登录
-        #编码
-        UserName = self.__cConfig.UserName.encode("GBK")
-        Password = base64.b64encode(self.__cConfig.Password.encode("utf-8"))
-        #登录的交互过程
-        ReqBody = urllib.parse.urlencode({'UNAME': UserName, 'PASSWORD': Password, 'encode_type': 1})
-        if (False == cHttp.Send("POST", "/logincheck.php", ReqBody)):
-            cHttp.Close()
-            return
-        AckCode, AckHead, AckBody = cHttp.Receive()
-        if 200 != AckCode:
-            cHttp.Close()
-            return
-        #验证登录结果
-        Result = AckBody.find(SuccessStr)
-        if -1 == Result:
-            cHttp.Close()
-            return
+        if (False == cHttp.ValidCookie()):
+            nRet = self.__cConfig.CheckUserPsw()
+            if (0 != nRet):
+                cHttp.Close()
+                return
         
         #Step3:查询记录
         #组装日期
@@ -157,6 +145,8 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
         cMime = CMIME()
         #登录成功定义
         SuccessStr = "正在进入OA系统，请稍候..."
+        #登录失败日志
+        LogErrMsg = ["登录成功", "参数错误", "网络错误", "用户名或密码错误"]
         
         #检测数据有效性
         if (None==self._cConfig.UserName or None==self._cConfig.Password or \
@@ -169,26 +159,10 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
         cHttp.Connect()
     
         #Step2：登录
-        #编码
-        UserName = self._cConfig.UserName.encode("GBK")
-        Password = base64.b64encode(self._cConfig.Password.encode("utf-8"))
-        #登录的交互过程
-        ReqBody = urllib.parse.urlencode({'UNAME': UserName, 'PASSWORD': Password, 'encode_type': 1})
-        if (False == cHttp.Send("POST", "/logincheck.php", ReqBody)):
-            self._WriteStatus("发送HTTP请求失败")
-            cHttp.Close()
-            return
-        AckCode, AckHead, AckBody = cHttp.Receive()
-        if 200 != AckCode:
-            self._WriteStatus("HTTP错误：%d" % (AckCode))
-            cHttp.Close()
-            return
-        #验证登录结果
-        Result = AckBody.find(SuccessStr)
-        if -1 == Result:
-            self._WriteStatus("用户名或密码错误")
-            cHttp.Close()
-            return
+        if (False == cHttp.ValidCookie()):
+            nRet = self.__cConfig.CheckUserPsw()
+            if (0 != nRet):
+                self._WriteStatus(LogErrMsg[nRet])
     
         #Step3：提取表单
         self._WriteStatus("正在新建表单……")

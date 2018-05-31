@@ -4,17 +4,20 @@ import http.client
 from io import StringIO
 import gzip
 import re
+import time
 import random, string
 import logging
 
 #Cookie类
 class CCookie:
-    __PhpSessionId = None
-    __UserNameCookie = None
-    __OAUserId=None
-    __SID=None
-    __CreakWork="new"
-    CookieBuffer = None
+    #组装好的cookie
+    __m_CookieBuffer = None
+    #Cookie字典
+    __m_Cookies = {}
+    #SID
+    __m_SID = ""
+    #Cookie有效期
+    __m_Expires = 0
 
     #函数名称：CCookie::__init__
     #函数功能：构造函数
@@ -27,45 +30,51 @@ class CCookie:
     #函数功能：将请求Set-Cookie字段所需要的Cookie填入相应字段
     #函数返回：无
     #函数参数：Cookies   ：Cookie集合
-    def SetCookie(self, Cookies):
-        if (None == Cookies):
+    def SetCookie(self, AckHead):
+        if (0 == len(AckHead)):
             return
-        #分割字段
-        SetCookieList = Cookies.split(', ')
-        for SetCookie in SetCookieList:
-            CookieList = SetCookie.split('; ')
-            for Cookie in CookieList:
-                FieldList = Cookie.split('=')
-                if ("PHPSESSID" == FieldList[0]):
-                    self.__PhpSessionId = FieldList[1]
-                elif ("USER_NAME_COOKIE" == FieldList[0]):
-                    self.__UserNameCookie = FieldList[1]
-                elif ("OA_USER_ID" == FieldList[0]):
-                    self.__OAUserId = FieldList[1]
-                elif (-1 != FieldList[0].find("SID_")):
-                    self.__SID = FieldList[1]
-        #组装Cookies
-        self.__Assemble()
+        
+        #查找Set-Cookie
+        for HeadCouple in AckHead:
+            if (HeadCouple[0] != "Set-Cookie"):
+                continue
+            SetCookieList = HeadCouple[1]
+            SetCookie = SetCookieList.split('; ')
+            for Cookie in SetCookie:
+                KVField = Cookie.split('=')
+                self.__m_Cookies[KVField[0]] = KVField[1]
+                #sid的key值记录下来，方便直接查找
+                if (-1 != KVField[0].find("SID_")):
+                    self.__m_SID = KVField[0]
+                #设置cookie有效期
+                if (KVField[0] == "expires"):
+                    FormatTime = time.strptime(KVField[1],"%a, %d-%b-%Y %H:%M:%S %Z")
+                    self.__m_Expires = time.mktime(FormatTime) + 8*60*60
 
-    #函数名称：CCookie::__Assemble
+    #函数名称：CCookie::GetCookieBuffer
     #函数功能：组装Cookie成字符串
     #函数返回：组装后的字符串
     #函数参数：无
-    def __Assemble(self):
+    def GetCookieBuffer(self):
+        #Cookie超时
+        if (time.time()>=self.__m_Expires or 0==len(self.__m_Cookies)):
+            self.__m_Cookies = {}
+            return None
+        
         #初始化Cookie缓存
-        self.CookieBuffer = ""
+        self.__m_CookieBuffer = ""
         #依次添加Cookie值
-        if None!=self.__PhpSessionId:
-            self.CookieBuffer = self.CookieBuffer + "PHPSESSID=" + self.__PhpSessionId + "; "
-        if None!=self.__UserNameCookie:
-            self.CookieBuffer = self.CookieBuffer + "USER_NAME_COOKIE=" + self.__UserNameCookie + "; "
-        if None!=self.__OAUserId:
-            self.CookieBuffer = self.CookieBuffer + "OA_USER_ID=" + self.__OAUserId + "; "
-        if None!=self.__OAUserId and None!=self.__SID:
-            self.CookieBuffer = self.CookieBuffer + "SID_" + self.__OAUserId + "=" + self.__SID + "; "
-        self.CookieBuffer = self.CookieBuffer + "creat_work=" + self.__CreakWork
+        if ("PHPSESSID" in self.__m_Cookies):
+            self.__m_CookieBuffer = self.__m_CookieBuffer + "PHPSESSID=" + self.__m_Cookies["PHPSESSID"] + "; "
+        if ("USER_NAME_COOKIE" in self.__m_Cookies):
+            self.__m_CookieBuffer = self.__m_CookieBuffer + "USER_NAME_COOKIE=" + self.__m_Cookies["USER_NAME_COOKIE"] + "; "
+        if ("OA_USER_ID" in self.__m_Cookies):
+            self.__m_CookieBuffer = self.__m_CookieBuffer + "OA_USER_ID=" + self.__m_Cookies["OA_USER_ID"] + "; "
+        if ("" != self.__m_SID and self.__m_SID in self.__m_Cookies):
+            self.__m_CookieBuffer = self.__m_CookieBuffer + self.__m_SID  + "=" + self.__m_Cookies[self.__m_SID] + "; "
+        self.__m_CookieBuffer = self.__m_CookieBuffer + "creat_work=new"
 
-        return self.CookieBuffer
+        return self.__m_CookieBuffer
 
 #HTTP数据收发类
 class CHttp:
@@ -131,6 +140,8 @@ class CHttp:
     #函数返回：True成功，False失败
     #函数参数：Port      ：服务器端口，默认为80
     def Connect(self, Port=80):
+        if (None != self.__Connect):
+            return
         self.__Connect = http.client.HTTPConnection("120.27.241.239", Port, timeout=30)
 
     #函数名称：CHttp::Send
@@ -141,10 +152,10 @@ class CHttp:
     #函数参数：ReqBody   ：请求体
     def Send(self, Method, ReqUrl, ReqBody=None):
         #检测数据有效性
-        if None==Method or None==ReqUrl:
+        if (None==Method or None==ReqUrl):
             logging.error("发送HTTP请求时，请求类型或Url无效")
             return False
-        if 0 == len(self.__ReqHead):
+        if (0 == len(self.__ReqHead)):
             logging.error("发送HTTP请求时，请求头部没有任何数据")
             return False
         #拷贝并打印数据
@@ -153,14 +164,15 @@ class CHttp:
         self.__ReqBody = ReqBody
         logging.info("%s %s HTTP/1.1" % (Method, ReqUrl))
         #拷贝cookie字段到ReqHead
-        if None!=self.__cCookie.CookieBuffer:
-            self.SetReqHead("Cookie", self.__cCookie.CookieBuffer)
+        CookieBuffer = self.__cCookie.GetCookieBuffer()
+        if (None!=CookieBuffer and ""!=CookieBuffer):
+            self.SetReqHead("Cookie", CookieBuffer)
 
         #根据不同类型发送请求数据
         try:
-            if "POST" == Method:
+            if ("POST" == Method):
                 self.__Connect.request(method=Method, url=ReqUrl,body=ReqBody, headers=self.__ReqHead)
-            if "GET" == Method:
+            if ("GET" == Method):
                 self.__Connect.request(method=Method, url=ReqUrl, headers=self.__ReqHead)
         except:
             logging.error("发送HTTP请求数据失败")
@@ -182,7 +194,7 @@ class CHttp:
             return 0, None, None
         self.__AckCode = self.__Response.status
         self.__AckHead = self.__Response.getheaders()
-        self.__cCookie.SetCookie(self.__Response.getheader("set-cookie"))
+        self.__cCookie.SetCookie(self.__AckHead)
         self.__AckBody = self.__Response.read()
         #解压缩
         Encoding = self.__Response.getheader("Content-Encoding")
@@ -191,12 +203,24 @@ class CHttp:
         
         return self.__AckCode, self.__AckHead, self.__AckBody
     
+    #函数名称：CHttp::ValidCookie
+    #函数功能：验证cookie是否过期
+    #函数返回：True Cookie有效，False Cookie无效
+    #函数参数：无
+    def ValidCookie(self):
+        CookieBuffer = self.__cCookie.GetCookieBuffer()
+        if (None!=CookieBuffer and ""!=CookieBuffer):
+            return True
+        
+        return False
+            
     #函数名称：CHttp::Close
     #函数功能：关闭Http连接
     #函数返回：无
     #函数参数：无
     def Close(self):
         self.__Connect.close()
+        self.__Connect = None
 
 #解压类
 class CUnzip:

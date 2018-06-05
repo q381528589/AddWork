@@ -8,7 +8,7 @@ from Login import CLogin
 from Register import CRegister
 from HttpInteraction import CForm
 
-
+#加班模块
 class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
     _translate = QtCore.QCoreApplication.translate
     #确认加班
@@ -20,6 +20,12 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
     #操作类
     _cOperation = None
     
+    #函数名称：CAddWork::__init__
+    #函数功能：构造函数
+    #函数返回：无
+    #函数参数：cLoadWindow    ：窗口加载类
+    #函数参数：cConfig        ：用户配置
+    #函数参数：cOpertation    ：http交互操作
     def __init__(self, cLoadWindow, cConfig, cOpertation):
         super(CAddWork, self).__init__()
         self.setupUi(self)
@@ -35,14 +41,25 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
         self.Btn_AddWork.setEnabled(False)
         self.Btn_AddWork.setText(self._translate("AddWorkWindow", "正在检查"))
         
-    
+    #函数名称：CAddWork::Show
+    #函数功能：显示加班窗口界面
+    #函数返回：无
+    #函数参数：无
     def Show(self):
         self._ReadConfig(self._cConfig)
         self.show()
-        
+    
+    #函数名称：CAddWork::Show
+    #函数功能：关闭加班窗口界面
+    #函数返回：无
+    #函数参数：无    
     def Close(self):
         self.close()
     
+    #函数名称：CAddWork::Update
+    #函数功能：执行更新操作
+    #函数返回：无
+    #函数参数：无    
     def Update(self):
         cError = CError()
         
@@ -65,7 +82,11 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
                 self.Btn_AddWork.setText(self._translate("AddWorkWindow", "一键加班"))
          
         return
-        
+    
+    #函数名称：CAddWork::_ReadConfig
+    #函数功能：读取用户信息
+    #函数返回：cConfig    ：用户信息配置
+    #函数参数：无        
     def _ReadConfig(self, cConfig):
         #显示用户名
         self.Label_CurUser.setText(self._translate("AddWorkWindow", "%s" % (cConfig.UserName)))
@@ -77,12 +98,20 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
         self.Combo_Bus.setCurrentIndex((~Index)&0x01)
         #加班理由
         self.Edit_Reason.setText(self._translate("AddWorkWindow", "%s" % (cConfig.Reason)))
-        
+    
+    #函数名称：CAddWork::Exit
+    #函数功能：退出登录
+    #函数返回：无
+    #函数参数：无        
     def Exit(self):
         #到登录界面
         self._cLoadWindow.ShowUI(1)
         self.hide()
     
+    #函数名称：CAddWork::AddWork
+    #函数功能：执行一键加班
+    #函数返回：无
+    #函数参数：无  
     def AddWork(self):
         #重新加班
         bReTry = False
@@ -137,9 +166,18 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
             self._cConfig.WriteFile()
         return
     
+    #函数名称：CAddWork::ChangePsw
+    #函数功能：弹出修改密码界面
+    #函数返回：无
+    #函数参数：无  
     def ChangePsw(self):
         pass
 
+    #函数名称：CAddWork::eventFilter
+    #函数功能：处理事件操作
+    #函数返回：False无任何操作（不要返回True，否则会触发异常事件）
+    #函数参数：obj      ：目标模块
+    #函数参数：event    ：触发事件
     def eventFilter(self, obj, event):
         #只处理失去焦点的事件
         if (event.type() != QtCore.QEvent.FocusOut):
@@ -174,7 +212,11 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
         if (True == self._cConfig.bUpdate):
             self._cConfig.WriteFile()
         return False
-            
+    
+    #函数名称：CAddWork::_WriteStatus
+    #函数功能：在界面打印状态信息
+    #函数返回：无
+    #函数参数：szData   ：要打印的信息
     def _WriteStatus(self, szData):
         self.Edit_Status.appendPlainText(szData)
         QtWidgets.QApplication.processEvents()

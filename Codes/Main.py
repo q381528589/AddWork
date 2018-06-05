@@ -51,19 +51,28 @@ class CUpdateApp:
         
         return
 
+
 #更新接口
 class CUpdate(threading.Thread):
     __bRunning = True
     #主函数app接口
     __cMainApp = None
     
+    #函数名称：CUpdate::__init__
+    #函数功能：构造函数
+    #函数返回：无
+    #函数参数：cMainApp    ：主程序
     def __init__(self, cMainApp):
         super(CUpdate, self).__init__()
         if (None == cMainApp):
             logging.critical("主启动程序不能为空指针")
             exit(0)
         self.__cMainApp = cMainApp
-        
+    
+    #函数名称：CUpdate::run
+    #函数功能：运行更新线程
+    #函数返回：无
+    #函数参数：无
     def run(self):
         while (self.__bRunning == True):
             #启动各个窗口的更新程序
@@ -75,6 +84,7 @@ class CUpdate(threading.Thread):
                 self.__cMainApp.m_pcAddWork.Update()
             #每次更新间隔1秒
             sleep(1)
+
             
 #主程序，用于加载窗口
 class CMain:

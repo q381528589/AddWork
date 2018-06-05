@@ -300,10 +300,14 @@ class CRegex:
             if True == bPrintError:
                 logging.error("正则表达式错误或者没有匹配到数据")
             return None
-
-        if None == RegexResult.group(Position):
-            if True == bPrintError:
-                logging.error("输入的提取位置与正则表达式不符")
+        
+        try:
+            if None == RegexResult.group(Position):
+                if True == bPrintError:
+                    logging.error("输入的提取位置与正则表达式不符")
+                return None
+        except:
+            logging.error("输入的提取位置与正则表达式不符")
             return None
 
         return RegexResult.group(Position)

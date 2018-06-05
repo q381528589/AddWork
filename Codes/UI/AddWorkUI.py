@@ -56,7 +56,6 @@ class Ui_AddWorkWindow(object):
         self.Combo_Bus.addItem("")
         self.Combo_Bus.addItem("")
         self.Btn_ChgPsw = QtWidgets.QPushButton(self.CAddWork)
-        self.Btn_ChgPsw.setEnabled(False)
         self.Btn_ChgPsw.setGeometry(QtCore.QRect(275, 50, 75, 23))
         self.Btn_ChgPsw.setObjectName("Btn_ChgPsw")
         self.Btn_AddWork = QtWidgets.QPushButton(self.CAddWork)

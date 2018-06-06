@@ -106,6 +106,7 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
     #函数参数：无        
     def Exit(self):
         #到登录界面
+        self._cLoadWindow.CloseUI(3)
         self._cLoadWindow.ShowUI(1)
         self.hide()
     

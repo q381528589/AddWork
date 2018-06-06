@@ -163,6 +163,25 @@ class CMain:
         
         return 0
 
+    #函数名称：CMain::CloseUI
+    #函数功能：关闭UI界面
+    #函数返回：无
+    #函数参数：UIIndex    对应的界面框，0注册；1登录；2加班；3修改密码
+    def CloseUI(self, UIIndex):
+        if (0==UIIndex and None!=self.m_pcRegister):
+            self.m_pcRegister.Close()
+        elif (1==UIIndex and None!=self.m_pcLogin):
+            self.m_pcLogin.Close()
+        elif (2==UIIndex and None!=self.m_pcAddWork):
+            self.m_pcAddWork.Close()
+        elif (3==UIIndex and None!=self.m_pcChangePsw):
+            self.m_pcChangePsw.Close()
+        else:
+            logging.error("没有找到有效的窗口界面")
+            return -1
+        
+        return 0
+    
         
 if __name__ == '__main__':
     #加解密算法

@@ -42,7 +42,15 @@ class CChgPsw(QtWidgets.QMainWindow, Ui_ChgPswWindow):
     #函数参数：无     
     def Close(self):
         self.close()
-        
+
+    #函数名称：CChgPsw::keyPressEvent
+    #函数功能：触发键盘事件
+    #函数返回：无
+    #函数参数：e        ：键盘事件
+    def keyPressEvent(self, e):
+        if e.key() == QtCore.Qt.Key_Enter:
+            self.__ChangePsw()
+                    
     #函数名称：CChgPsw::Update
     #函数功能：更新程序
     #函数返回：无
@@ -75,13 +83,15 @@ class CChgPsw(QtWidgets.QMainWindow, Ui_ChgPswWindow):
             return
         else:
             QMessageBox.information(self, "提示", self.tr("密码修改成功"))
-            self.Close()
-            return
         
         #修改本地用户配置
         self._cConfig.Password = NewPsw
         self._cConfig.bFileChange = True
         self._cConfig.WriteFile()
+        
+        #清理界面
+        self.__ClearPsw()
+        self.Close()
         return
     
     #函数名称：CChgPsw::__ClearPsw

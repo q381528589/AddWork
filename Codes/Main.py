@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 
+import os, sys, logging
+import threading
 from PyQt5 import QtWidgets
-from Register import *
-from Login import *
-from AddWork import *
+from Register import CRegister
+from Login import CLogin
+from AddWork import CAddWork
+from ChgPsw import CChgPsw
 from Operation import COperation
 from ConfigFileIO import CFileMng, CConfig
 from DESCode import CDESCode
 from time import sleep
-import os, logging
-import threading
 
 #启动自动更新程序
 class CUpdateApp:
@@ -124,8 +125,12 @@ class CMain:
             self.m_pcLogin.Show()
         #加班界面
         else:
-            self.m_pcAddWork = CAddWork(self, cConfig, self.m_cOperation)
-            self.m_pcAddWork.Show()
+            if (3 == self.m_cOperation.CheckUserPsw(cConfig.UserName, cConfig.Password)):
+                self.m_pcLogin = CLogin(self, cConfig, self.m_cOperation)
+                self.m_pcLogin.Show()
+            else:
+                self.m_pcAddWork = CAddWork(self, cConfig, self.m_cOperation)
+                self.m_pcAddWork.Show()
             
         #启动自动更新
         self.m_pcUpdate.setDaemon(True)
@@ -148,6 +153,10 @@ class CMain:
             if (None == self.m_pcAddWork):
                 self.m_pcAddWork = CAddWork(self, self.m_cConfig, self.m_cOperation)
             self.m_pcAddWork.Show()
+        elif (3 == UIIndex):
+            if (None == self.m_pcChangePsw):
+                self.m_pcChangePsw = CChgPsw(self, self.m_cConfig, self.m_cOperation)
+            self.m_pcChangePsw.Show()
         else:
             logging.error("没有找到有效的窗口界面")
             return -1

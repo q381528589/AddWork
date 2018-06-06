@@ -8,6 +8,7 @@ from updateUI import *
 
 #下载路径
 DOWNLOAD_PATH = "https://raw.githubusercontent.com/q381528589/Publisher/master/Addwork/"
+APP_NAME = "AddWork.exe"
 
 class CDownload(threading.Thread):
     Percent = 0
@@ -34,14 +35,15 @@ class CDownload(threading.Thread):
     def __HandleAddwork(self):
         #获取网络上最新版本
         try:
-            urllib.request.urlretrieve(DOWNLOAD_PATH+"AddWork.exe", "./AddWork.exe.download", self.Schedule)
+            urllib.request.urlretrieve(DOWNLOAD_PATH+APP_NAME, 
+                                       "./%s.download" % (APP_NAME), self.Schedule)
         except:
             print ("获取更新程序失败")
             return
         
         #关闭程序
         try:
-            subprocess.check_call("taskkill /F /IM AddWork.exe")
+            subprocess.check_call("taskkill /F /IM %s" % (APP_NAME))
         except:
             #TODO：用户手动关闭程序
             pass
@@ -67,9 +69,9 @@ class CUpdate(QtWidgets.QDialog, Ui_Dialog):
             return
         
         #重命名文件
-        if (os.path.exists("./AddWork.exe")):
-            os.remove("./AddWork.exe")
-        os.rename("./AddWork.exe.download", "./AddWork.exe")
+        if (os.path.exists("./%s" % (APP_NAME))):
+            os.remove("./%s" % (APP_NAME))
+        os.rename("./%s.download" % (APP_NAME), "./%s" % (APP_NAME))
         #写入版本文件
         self.__WriteLocalVersion()
         

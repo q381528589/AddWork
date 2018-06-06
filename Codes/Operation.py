@@ -10,6 +10,10 @@ from HttpInteraction import CHttp, CRegex, CMIME
 class CError:
     #错误消息集合
     __m_ErrStr = []
+    #动态错误码
+    __m_DynamicErrCode = 100
+    #动态错误消息
+    __m_DynamicErrMsg = []
     
     #函数名称：CError::__init__
     #函数功能：构造函数
@@ -23,16 +27,34 @@ class CError:
         self.__m_ErrStr.append("已报名加班")
         self.__m_ErrStr.append("表单已存在")
         self.__m_ErrStr.append("获取表单信息错误")
+        self.__m_ErrStr.append("新密码长度要求8-20位，并包含字母和数字")
+        
+        self.__m_DynamicErrMsg.append("没有错误")
+    
+    #函数名称：CError::SetErrMsg
+    #函数功能：设置动态错误消息
+    #函数返回：临时错误码
+    #函数参数：ErrMsg    ：错误消息
+    def SetErrMsg(self, ErrMsg):
+        self.__m_DynamicErrMsg.append(ErrMsg)
+        self.__m_DynamicErrCode += 1
+        return self.__m_DynamicErrCode
     
     #函数名称：CError::GetErrMsg
     #函数功能：获取错误解释
     #函数返回：无
     #函数参数：nRet    ：错误码
     def GetErrMsg(self, nRet):
-        if (nRet >= len(self.__m_ErrStr)):
-            logging.error("传入的返回值错误")
-            return "传入的返回值错误"
-        return self.__m_ErrStr[nRet]
+        if (nRet < 100):
+            if (nRet >= len(self.__m_ErrStr)):
+                logging.error("传入的返回值错误")
+                return "传入的返回值错误"
+            return self.__m_ErrStr[nRet]
+        else:
+            if (nRet-100 >= len(self.__m_DynamicErrMsg)):
+                logging.error("传入的返回值错误")
+                return "传入的返回值错误"
+            return self.__m_DynamicErrMsg[nRet-100]
     
 #涉及到的Http操作    
 class COperation:
@@ -157,7 +179,7 @@ class COperation:
     
         #Step2：登录
         if (False == self.__m_cHttp.ValidCookie()):
-            nRet = self.__cConfig.CheckUserPsw(self.__cConfig.UserName, self.__cConfig.Password)
+            nRet = self.CheckUserPsw(cConfig.UserName, cConfig.Password)
             if (0 != nRet):
                 return nRet
     
@@ -308,6 +330,62 @@ class COperation:
     
         return 0
 
+    #函数名称：COperation::ChangePsw
+    #函数功能：退出Http会话
+    #函数返回：0修改成功 1参数错误 2网络错误 3用户名或密码错误 6提取表单信息错误 7新密码验证失败
+    #函数参数：cConfig   :用户配置
+    #函数参数：OldPsw    :原密码
+    #函数参数：NewPsw    ：新密码
+    #函数参数：cError    ：错误消息类
+    def ChangePsw(self, cConfig, OldPsw, NewPsw, cError):
+        #验证新密码
+        Result = self.__m_cRegex.Match(r'^\S*[A-Za-z]+\S*$', NewPsw, 0, True)
+        if (None == Result):
+            logging.error("本地验证新密码不通过")
+            return 7
+        Result = self.__m_cRegex.Match(r'^\S*[0-9]+\S*$', NewPsw, 0, True)
+        if (None == Result):
+            logging.error("本地验证新密码不通过")
+            return 7
+        
+        #Step1：连接
+        self.__m_cHttp.Connect()
+        
+        #Step2：登录
+        if (False == self.__m_cHttp.ValidCookie()):
+            nRet = self.CheckUserPsw(cConfig.UserName, cConfig.Password)
+            if (0 != nRet):
+                return nRet
+        
+        #发送请求
+        ReqBody = "PASS0=%s&PASS1=%s&PASS2=%s" % (OldPsw, NewPsw, NewPsw)
+        if (False == self.__m_cHttp.Send("POST", "/general/person_info/pass/update.php", ReqBody.encode("GBK"))):
+            self.__m_cHttp.Close()
+            return 2
+        AckCode, AckHead, AckBody = self.__m_cHttp.Receive()
+        if (200 != AckCode):
+            logging.error("HTTP 应答码:%d 不是系统需要的" % (AckCode))
+            return 2
+        
+        #错误解释
+        Result = self.__m_cRegex.Match(r'<div class="title">错误</div>', AckBody, 0, False)
+        if (None != Result):
+            Result = self.__m_cRegex.Match(r'<div class="msg-content">(.*?)</div>', AckBody, 1, True)
+            if (None == Result):
+                logging.error("匹配错误信息的正则表达式有错误")
+                return 6
+            nRet = cError.SetErrMsg(Result)
+            return nRet
+        else:
+            Result = self.__m_cRegex.Match(r'<div class="msg-content">(.*?)</div>', AckBody, 1, True)
+            if (None == Result):
+                logging.error("匹配错误信息的正则表达式有错误")
+                return 6
+            if (Result != "用户密码已修改!"):
+                nRet = cError.SetErrMsg(Result)
+                return nRet
+            return 0
+        
     #函数名称：COperation::ExitHttp
     #函数功能：退出Http会话
     #函数返回：无

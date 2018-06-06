@@ -180,10 +180,18 @@ class CUpdate(QtWidgets.QDialog, Ui_Dialog):
         if (int(NewList[0]) > int(OldList[0])):
             #大版本更新
             return True
-        elif (int(NewList[1]) > int (OldList[1])):
+        elif (int(NewList[0]) < int(OldList[0])):
+            return False
+        
+        if (int(NewList[1]) > int (OldList[1])):
             return True
-        elif (int(NewList[2]) > int (OldList[2])):
+        elif (int(NewList[1]) < int (OldList[1])):
+            return False
+        
+        if (int(NewList[2]) > int (OldList[2])):
             return True
+        elif (int(NewList[2]) < int (OldList[2])):
+            return False
         
         #svn版本号更新的不算在列
         return False

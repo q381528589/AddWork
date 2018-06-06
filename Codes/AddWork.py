@@ -80,6 +80,7 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
                 self._WriteStatus(cError.GetErrMsg(nRet))
                 self.Btn_AddWork.setEnabled(True)
                 self.Btn_AddWork.setText(self._translate("AddWorkWindow", "一键加班"))
+                self._bCheck = True
          
         return
     
@@ -128,15 +129,19 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
         elif (1==nRet or 2==nRet):
             #打印日志
             self._WriteStatus(cError.GetErrMsg(nRet))
+            return
         elif (3 == nRet):
             self._WriteStatus(cError.GetErrMsg(nRet))
+            return
         elif (5 == nRet):
             self._WriteStatus("新建表单失败，正在查找已有表单……")
             bReTry = True
         elif (6 == nRet):
             self._WriteStatus("获取表单信息发生错误，请重试")
+            return
         else:
             self._WriteStatus("未知原因错误，请重试")
+            return
         
         #重新加班
         if (True == bReTry):
@@ -150,12 +155,16 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
             elif (1==nRet or 2==nRet):
                 #打印日志
                 self._WriteStatus(cError.GetErrMsg(nRet))
+                return
             elif (3 == nRet):
                 self._WriteStatus(cError.GetErrMsg(nRet))
+                return
             elif (6 == nRet):
                 self._WriteStatus("获取表单信息发生错误，请重试")
+                return
             else:
                 self._WriteStatus("未知原因错误，请重试")
+                return
         
         #设置一键加班为disable
         self.Btn_AddWork.setEnabled(False)
@@ -171,7 +180,9 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
     #函数返回：无
     #函数参数：无  
     def ChangePsw(self):
-        pass
+        #到修改密码界面
+        self._cLoadWindow.ShowUI(3)
+        
 
     #函数名称：CAddWork::eventFilter
     #函数功能：处理事件操作

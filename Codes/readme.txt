@@ -15,7 +15,7 @@ UI文件转py文件：pyuic5 -o xxx.py xxx.ui
 	pyinstaller -p "D:\Program Files\Python36\Lib\site-packages\PyQt5\Qt\bin" --version-file="./Version_Info.txt" -w -F Main.py
 	找到相对目录下的/dist文件夹，重命名Main.exe文件：rename Main.exe AddWork.exe
 编译更新程序命令：
-	pyinstaller -p "D:\Program Files\Python36\Lib\site-packages\PyQt5\Qt\bin" -w -F update.py
+	pyinstaller -p "D:\Program Files\Python36\Lib\site-packages\PyQt5\Qt\bin" --version-file="./UpdateVer_Info.txt" -w -F update.py
 
 已知bug：
 1.用户从未登录时，默认密码为“synwa@2171”,登录后网页自动跳转，此时可能会因为pcre匹配不通过而显示用户名或密码错误。

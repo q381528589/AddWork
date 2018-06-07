@@ -4,7 +4,7 @@ import os, sys, subprocess
 import urllib.request
 import threading
 from PyQt5 import QtCore, QtWidgets
-from updateUI import *
+from UI.updateUI import *
 
 #下载路径
 DOWNLOAD_PATH = "https://raw.githubusercontent.com/q381528589/Publisher/master/Addwork/"

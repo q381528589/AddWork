@@ -133,7 +133,8 @@ class CHttp:
     #函数返回：无
     #函数参数：Key       ：字典Key，字段类型
     def DelReqHead(self, Key):
-        del self.__ReqHead[Key]
+        if (Key in self.__ReqHead):
+            del self.__ReqHead[Key]
 
     #函数名称：CHttp::Connect
     #函数功能：连接服务器

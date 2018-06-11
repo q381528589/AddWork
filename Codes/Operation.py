@@ -215,7 +215,7 @@ class COperation:
             #查找表单数据。构建正则表达式
             szRegexTemp = "<td align=\"left\">.*?openURL\(.*?,.*?,'(.*?)'\)\">加班登记"
             szRegexTemp += "（%s年[0]?%s月[0]?%s日）" % (str(cTime.tm_year), str(cTime.tm_mon), str(cTime.tm_mday))
-            szRegexTemp += ".*?-%s" % self._cConfig.UserName
+            szRegexTemp += ".*?-%s" % cConfig.UserName
             pszUrlTemp = self.__m_cRegex.Match(szRegexTemp, AckBody, 1)
             if (None == pszUrlTemp):
                 logging.error("正则表达式没有匹配到数据")
@@ -236,8 +236,7 @@ class COperation:
             ReqUrl += "RUN_ID=%s&FLOW_ID=%s&PRCS_ID=%s&FLOW_PRCS=%s" % \
                       (cForm.run_id, cForm.flow_id, cForm.prcs_id, cForm.flow_prcs)
         else:
-            SplitList = pszUrlTemp.split("../")
-            ReqUrl = "/general/workflow/" + SplitList[len(SplitList)-1]
+            ReqUrl = pszUrlTemp
 
         if (False == self.__m_cHttp.Send("GET", ReqUrl)):
             self.__m_cHttp.Close()
@@ -247,7 +246,7 @@ class COperation:
             logging.error("HTTP 应答码:%d 不是系统需要的" % (AckCode))
             return 2
         #根据正则表达式填写表单
-        cForm.prcs_key_id = self.__m_cHttp.Match(r"prcs_key_id.*?= \'(.*?)\',", AckBody, 1)
+        cForm.prcs_key_id = self.__m_cRegex.Match(r"prcs_key_id.*?= \'(.*?)\',", AckBody, 1)
         cForm.run_name = self.__m_cRegex.Match(r"en_run_name.*?=[\s\S]*?run_name.*?= \"(.*?)\"", AckBody, 1)
         if (None == cForm.run_name):
             logging.error("正则表达式没有匹配到有效的表单数据")
@@ -264,17 +263,17 @@ class COperation:
         cForm.data_91 = time.strftime("%Y-%m-%d", time.localtime())
         cForm.data_67 = time.strftime("%X", time.localtime())
         #加班餐
-        if (True == self._cConfig.Dinner):
+        if (True == cConfig.Dinner):
             cForm.data_89 = "是"
         else:
             cForm.data_89 = "否"
         #加班班车
-        if (True == self._cConfig.Bus):
+        if (True == cConfig.Bus):
             cForm.data_90 = "是"
         else:
             cForm.data_90 = "否"
         #Reason
-        cForm.data_73 = self._cConfig.Reason
+        cForm.data_73 = cConfig.Reason
     
         #Step5：提交当前用户名
         self.__m_cHttp.SetReqHead("Origin", "http://do.sanhuid.com")

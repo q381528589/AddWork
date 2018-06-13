@@ -5,7 +5,6 @@ import urllib, base64
 import urllib.request
 import time
 from HttpInteraction import CHttp, CRegex, CMIME
-from builtins import None
 
 #错误消息
 class CError:
@@ -232,9 +231,6 @@ class COperation:
             return 6
         
         #Step4：继续获取表单
-        #考虑到提取的URL经常变化，这里暂时把URL改为None，即自行组装
-        pszUrlTemp = None
-        
         if None == pszUrlTemp:
             ReqUrl = "/general/workflow/list/input_form/?MENU_FLAG=&"
             ReqUrl += "RUN_ID=%s&FLOW_ID=%s&PRCS_ID=%s&FLOW_PRCS=%s" % \

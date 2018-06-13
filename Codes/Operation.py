@@ -240,7 +240,11 @@ class COperation:
             ReqUrl += "RUN_ID=%s&FLOW_ID=%s&PRCS_ID=%s&FLOW_PRCS=%s" % \
                       (cForm.run_id, cForm.flow_id, cForm.prcs_id, cForm.flow_prcs)
         else:
-            ReqUrl = pszUrlTemp
+            SplitList = pszUrlTemp.split("../")
+            if (1 == len(SplitList)):
+                ReqUrl = pszUrlTemp
+            else:
+                ReqUrl = "/general/workflow/" + SplitList[len(SplitList)-1]
 
         if (False == self.__m_cHttp.Send("GET", ReqUrl)):
             self.__m_cHttp.Close()

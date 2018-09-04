@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, Qt
+
 from UI.AddWorkUI import *
 from Operation import COperation, CError
 from Login import CLogin
 from Register import CRegister
 from HttpInteraction import CForm
+from PyQt5.Qt import QMenu
 
 #加班模块
 class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
@@ -32,14 +34,28 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
         #self.Btn_Exit.clicked.connect(self.Exit)
         self.Btn_AddWork.clicked.connect(self.AddWork)
         #self.Btn_ChgPsw.clicked.connect(self.ChangePsw)
+        self.Tool_Min.clicked.connect(self.showMinimized)
+        self.Tool_Close.clicked.connect(self.close)
         
         self._cConfig = cConfig
         self._cLoadWindow = cLoadWindow
         self._cOperation = cOpertation
             
         #检查用户是否已报名
-        #self.Btn_AddWork.setEnabled(False)
-        #self.Btn_AddWork.setText(self._translate("AddWorkWindow", "正在检查"))
+        self.Btn_AddWork.setEnabled(False)
+        self.Btn_AddWork.setText(self._translate("AddWorkWindow", "正在检查"))
+        
+        #设置下拉菜单
+        menu = QMenu(self)
+        self.ChgPsw = QtWidgets.QAction("修改密码", self)
+        self.Logout = QtWidgets.QAction("退出登录", self)
+        menu.addAction(self.ChgPsw)
+        menu.addSeparator()
+        menu.addAction(self.Logout)
+        menu.addSeparator()
+        self.Btn_Settings.setMenu(menu)
+        self.ChgPsw.triggered.connect(self.ChangePsw)
+        self.Logout.triggered.connect(self.Exit)
         
         #QSS界面美化设置
         file = open('./QT_UI/qss/AddWork.qss')
@@ -47,6 +63,10 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
         styleSheet = ''.join(styleSheet).strip('\n')
         self.setStyleSheet(styleSheet)
         
+        #self.Btn_Settings.getMenu().findItem(R.id.moreMenu).setVisible(False);
+        # 设置窗口标记（无边框|任务栏右键菜单）
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowSystemMenuHint)
+
     #函数名称：CAddWork::Show
     #函数功能：显示加班窗口界面
     #函数返回：无
@@ -69,6 +89,7 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
     def Update(self):
         cError = CError()
         
+        self._bCheck = True
         #构造加班检查类
         if (False == self._bCheck):
             #检查用户是否报名

@@ -1,7 +1,13 @@
-QWidget#mainWindow {
+/**********QWidget**********/
+QWidget#CAddWork {
     border: 1px solid rgb(111, 156, 207);
+    border-radius: 4px;
     background: rgb(232, 241, 252);
 }
+
+/**********Label**********/
+QLabel {
+    border: none;}
 
 /**********ComboBox**********/
 QComboBox {
@@ -11,7 +17,7 @@ QComboBox {
     background: white;
 }
 QComboBox:enabled {
-    color: rgb(0, 0, 0);
+    color: rgb(84, 84, 84);
 }
 QComboBox:!enabled {
     color: rgb(80, 80, 80);
@@ -55,21 +61,41 @@ QComboBox QAbstractItemView::item:selected {
 }
 
 /**********ToolButton**********/
-QToolButton#ToolButton {
-    border-image: url(./QT_UI/images/settings.png);
+QToolButton#Tool_Min {
+    border-image: url(./QT_UI/images/minimized.png);
     color: rgb(2, 65, 132);
     background: transparent;
     padding: 25px;
 }
-QToolButton#ToolButton:hover {
+QToolButton#Tool_Min:hover {
+    background: rgb(187, 212, 238);
+}
+QToolButton#Tool_Close {
+    border-image: url(./QT_UI/images/close.png);
+    color: rgb(2, 65, 132);
+    background: transparent;
+    padding: 25px;
+}
+QToolButton#Tool_Close:hover {
+    background: rgb(187, 212, 238);
+}
+/**********PushButton**********/
+QPushButton#Btn_Settings {
+    border-image: url(./QT_UI/images/settings.png);
+    text-align: left center;
+    padding-left: 3px;
+    color: rgb(2, 65, 132);
+    background: transparent;
+}
+QPushButton#Btn_Settings:hover {
     background: rgb(187, 212, 238);
 }
 
-QToolButton#ToolButton::menu-arrow {
-    background-image:url(./QT_UI/images/settings.png);
+QPushButton#Btn_Settings::menu-indicator {
+    image:none;
+    subcontrol-origin: padding;
 }
 
-/**********PushButton**********/
 QPushButton#Btn_AddWork{
     border-radius: 4px;
     border: none;
@@ -92,6 +118,38 @@ QPushButton#Btn_AddWork:enabled:pressed{
     color: black;
 }
 
+/**********Menu**********/
+QMenu {
+    border: 1px solid rgb(111, 156, 207);
+    background: rgb(232, 241, 250);
+}
+QMenu::item {
+    height: 22px;
+    padding: 0px 25px 0px 20px;
+}
+QMenu::item:enabled {
+    color: rgb(84, 84, 84);
+}
+QMenu::item:!enabled {
+    color: rgb(155, 155, 155);
+}
+QMenu::item:enabled:selected {
+    color: rgb(2, 65, 132);
+    background: rgba(255, 255, 255, 200);
+}
+QMenu::separator {
+    height: 1px;
+    background: rgb(111, 156, 207);
+}
+QMenu::indicator {
+    width: 13px;
+    height: 13px;
+}
+QMenu::icon {
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
 /**********LineEdit**********/
 QLineEdit#Edit_Reason {
     border-radius: 4px;
@@ -104,7 +162,7 @@ QLineEdit#Edit_Reason:enabled {
 }
 QLineEdit#Edit_Reason:enabled:hover, QLineEdit:enabled:focus {
     border: 1px solid rgb(100, 160, 220);
-    color: rgb(0, 0, 0);
+    color: rgb(2, 65, 132);
 }
 QLineEdit#Edit_Reason:!enabled {
     color: rgb(80, 80, 80);

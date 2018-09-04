@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file './QT_UI/AddWork.ui'
+# Form implementation generated from reading ui file 'QT_UI/AddWork.ui'
 #
 # Created by: PyQt5 UI code generator 5.8.2
 #
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_AddWorkWindow(object):
     def setupUi(self, AddWorkWindow):
         AddWorkWindow.setObjectName("AddWorkWindow")
-        AddWorkWindow.resize(374, 293)
+        AddWorkWindow.resize(375, 290)
         AddWorkWindow.setFixedSize(AddWorkWindow.width(), AddWorkWindow.height()); 
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -21,13 +21,14 @@ class Ui_AddWorkWindow(object):
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("Icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         AddWorkWindow.setWindowIcon(icon)
+        AddWorkWindow.setToolButtonStyle(QtCore.Qt.ToolButtonTextUnderIcon)
         self.CAddWork = QtWidgets.QWidget(AddWorkWindow)
         self.CAddWork.setObjectName("CAddWork")
         self.Label_User = QtWidgets.QLabel(self.CAddWork)
-        self.Label_User.setGeometry(QtCore.QRect(180, 14, 70, 20))
+        self.Label_User.setGeometry(QtCore.QRect(120, 20, 70, 20))
         self.Label_User.setObjectName("Label_User")
         self.Label_CurUser = QtWidgets.QLabel(self.CAddWork)
-        self.Label_CurUser.setGeometry(QtCore.QRect(235, 14, 80, 20))
+        self.Label_CurUser.setGeometry(QtCore.QRect(180, 20, 80, 20))
         self.Label_CurUser.setObjectName("Label_CurUser")
         self.Label_Dinner = QtWidgets.QLabel(self.CAddWork)
         self.Label_Dinner.setGeometry(QtCore.QRect(20, 50, 60, 16))
@@ -58,10 +59,18 @@ class Ui_AddWorkWindow(object):
         self.Btn_AddWork = QtWidgets.QPushButton(self.CAddWork)
         self.Btn_AddWork.setGeometry(QtCore.QRect(275, 50, 75, 50))
         self.Btn_AddWork.setObjectName("Btn_AddWork")
-        self.ToolButton = QtWidgets.QToolButton(self.CAddWork)
-        self.ToolButton.setGeometry(QtCore.QRect(325, 10, 25, 25))
-        self.ToolButton.setText("")
-        self.ToolButton.setObjectName("ToolButton")
+        self.Btn_Settings = QtWidgets.QPushButton(self.CAddWork)
+        self.Btn_Settings.setGeometry(QtCore.QRect(310, 0, 20, 20))
+        self.Btn_Settings.setText("")
+        self.Btn_Settings.setObjectName("Btn_Settings")
+        self.Tool_Min = QtWidgets.QToolButton(self.CAddWork)
+        self.Tool_Min.setGeometry(QtCore.QRect(330, 0, 20, 20))
+        self.Tool_Min.setText("")
+        self.Tool_Min.setObjectName("Tool_Min")
+        self.Tool_Close = QtWidgets.QToolButton(self.CAddWork)
+        self.Tool_Close.setGeometry(QtCore.QRect(350, 0, 20, 20))
+        self.Tool_Close.setText("")
+        self.Tool_Close.setObjectName("Tool_Close")
         self.Edit_Reason.installEventFilter(self)
         self.Combo_Dinner.installEventFilter(self)
         self.Combo_Bus.installEventFilter(self)

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Login.ui'
+# Form implementation generated from reading ui file 'QT_UI/Login.ui'
 #
 # Created by: PyQt5 UI code generator 5.8.2
 #
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_LoginWindow(object):
     def setupUi(self, LoginWindow):
         LoginWindow.setObjectName("LoginWindow")
-        LoginWindow.resize(213, 163)
+        LoginWindow.resize(215, 160)
         LoginWindow.setFixedSize(LoginWindow.width(), LoginWindow.height()); 
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -23,37 +23,40 @@ class Ui_LoginWindow(object):
         LoginWindow.setWindowIcon(icon)
         LoginWindow.setWhatsThis("")
         self.QLoginWindow = QtWidgets.QWidget(LoginWindow)
-        self.QLoginWindow.setGeometry(QtCore.QRect(0, 0, 213, 141))
-        self.QLoginWindow.setMinimumSize(QtCore.QSize(213, 141))
-        self.QLoginWindow.setMaximumSize(QtCore.QSize(213, 141))
+        self.QLoginWindow.setGeometry(QtCore.QRect(0, 0, 215, 160))
         self.QLoginWindow.setObjectName("QLoginWindow")
         self.Label_User = QtWidgets.QLabel(self.QLoginWindow)
-        self.Label_User.setGeometry(QtCore.QRect(15, 20, 48, 16))
+        self.Label_User.setGeometry(QtCore.QRect(20, 20, 50, 20))
         self.Label_User.setObjectName("Label_User")
         self.Label_ShowUser = QtWidgets.QLabel(self.QLoginWindow)
-        self.Label_ShowUser.setGeometry(QtCore.QRect(69, 20, 121, 16))
+        self.Label_ShowUser.setGeometry(QtCore.QRect(75, 20, 120, 20))
         self.Label_ShowUser.setWhatsThis("")
         self.Label_ShowUser.setTextFormat(QtCore.Qt.AutoText)
         self.Label_ShowUser.setObjectName("Label_ShowUser")
         self.Label_Psw = QtWidgets.QLabel(self.QLoginWindow)
-        self.Label_Psw.setGeometry(QtCore.QRect(15, 50, 36, 16))
+        self.Label_Psw.setGeometry(QtCore.QRect(20, 50, 35, 20))
         self.Label_Psw.setObjectName("Label_Psw")
         self.Text_Psw = QtWidgets.QLineEdit(self.QLoginWindow)
-        self.Text_Psw.setGeometry(QtCore.QRect(69, 50, 121, 20))
+        self.Text_Psw.setGeometry(QtCore.QRect(75, 50, 120, 20))
         self.Text_Psw.setEchoMode(QtWidgets.QLineEdit.Password)
         self.Text_Psw.setObjectName("Text_Psw")
         self.Check_NoPsw = QtWidgets.QCheckBox(self.QLoginWindow)
-        self.Check_NoPsw.setGeometry(QtCore.QRect(15, 80, 116, 16))
+        self.Check_NoPsw.setGeometry(QtCore.QRect(20, 80, 120, 20))
         self.Check_NoPsw.setObjectName("Check_NoPsw")
         self.Label_Status = QtWidgets.QLabel(self.QLoginWindow)
-        self.Label_Status.setGeometry(QtCore.QRect(15, 110, 96, 23))
+        self.Label_Status.setGeometry(QtCore.QRect(20, 110, 95, 25))
         self.Label_Status.setObjectName("Label_Status")
         self.Btn_Login = QtWidgets.QPushButton(self.QLoginWindow)
-        self.Btn_Login.setGeometry(QtCore.QRect(114, 110, 76, 23))
+        self.Btn_Login.setGeometry(QtCore.QRect(120, 110, 75, 25))
         self.Btn_Login.setObjectName("Btn_Login")
-        self.statusbar = QtWidgets.QStatusBar(LoginWindow)
-        self.statusbar.setGeometry(QtCore.QRect(0, 0, 3, 18))
-        self.statusbar.setObjectName("statusbar")
+        self.Tool_Close = QtWidgets.QToolButton(self.QLoginWindow)
+        self.Tool_Close.setGeometry(QtCore.QRect(185, 0, 20, 20))
+        self.Tool_Close.setText("")
+        self.Tool_Close.setObjectName("Tool_Close")
+        self.Tool_Min = QtWidgets.QToolButton(self.QLoginWindow)
+        self.Tool_Min.setGeometry(QtCore.QRect(165, 0, 20, 20))
+        self.Tool_Min.setText("")
+        self.Tool_Min.setObjectName("Tool_Min")
 
         self.retranslateUi(LoginWindow)
         QtCore.QMetaObject.connectSlotsByName(LoginWindow)

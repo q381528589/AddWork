@@ -28,7 +28,19 @@ class CLogin(QtWidgets.QMainWindow, Ui_LoginWindow):
         self._cLoadWindow = cLoadWindow
         self._cOperation = cOpertation
         self.Label_ShowUser.setText(self._translate("LoginWindow", cConfig.UserName))
-
+        
+        #设置最小化和关闭
+        self.Tool_Min.clicked.connect(self.showMinimized)
+        self.Tool_Close.clicked.connect(self.close)
+        
+        #加载QSS
+        file = open('./QT_UI/qss/Login.qss')
+        styleSheet = file.readlines()
+        styleSheet = ''.join(styleSheet).strip('\n')
+        self.setStyleSheet(styleSheet)
+        
+        # 设置窗口标记（无边框|任务栏右键菜单）
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowSystemMenuHint)
 
     #函数名称：CLogin::Show
     #函数功能：显示窗口

@@ -27,8 +27,8 @@
    <widget class="QLabel" name="Label_User">
     <property name="geometry">
      <rect>
-      <x>171</x>
-      <y>10</y>
+      <x>180</x>
+      <y>15</y>
       <width>70</width>
       <height>20</height>
      </rect>
@@ -40,8 +40,8 @@
    <widget class="QLabel" name="Label_CurUser">
     <property name="geometry">
      <rect>
-      <x>226</x>
-      <y>10</y>
+      <x>235</x>
+      <y>15</y>
       <width>80</width>
       <height>20</height>
      </rect>
@@ -152,53 +152,48 @@
      </property>
     </item>
    </widget>
-   <widget class="QPushButton" name="Btn_ChgPsw">
+   <widget class="QPushButton" name="Btn_AddWork">
     <property name="geometry">
      <rect>
       <x>275</x>
       <y>50</y>
       <width>75</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>修改密码</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="Btn_AddWork">
-    <property name="geometry">
-     <rect>
-      <x>275</x>
-      <y>80</y>
-      <width>75</width>
-      <height>23</height>
+      <height>50</height>
      </rect>
     </property>
     <property name="text">
      <string>一键加班</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="Btn_Exit">
+   <widget class="QToolButton" name="ToolButton">
     <property name="geometry">
      <rect>
-      <x>290</x>
+      <x>325</x>
       <y>10</y>
-      <width>61</width>
-      <height>23</height>
+      <width>25</width>
+      <height>25</height>
      </rect>
     </property>
     <property name="text">
-     <string>退出登录</string>
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>images/settings.png</normaloff>images/settings.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>12</width>
+      <height>12</height>
+     </size>
     </property>
    </widget>
   </widget>
  </widget>
  <tabstops>
-  <tabstop>Btn_Exit</tabstop>
   <tabstop>Combo_Dinner</tabstop>
   <tabstop>Combo_Bus</tabstop>
   <tabstop>Edit_Reason</tabstop>
-  <tabstop>Btn_ChgPsw</tabstop>
   <tabstop>Btn_AddWork</tabstop>
   <tabstop>Edit_Status</tabstop>
  </tabstops>

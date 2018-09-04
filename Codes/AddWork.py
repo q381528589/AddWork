@@ -29,17 +29,23 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
     def __init__(self, cLoadWindow, cConfig, cOpertation):
         super(CAddWork, self).__init__()
         self.setupUi(self)
-        self.Btn_Exit.clicked.connect(self.Exit)
+        #self.Btn_Exit.clicked.connect(self.Exit)
         self.Btn_AddWork.clicked.connect(self.AddWork)
-        self.Btn_ChgPsw.clicked.connect(self.ChangePsw)
+        #self.Btn_ChgPsw.clicked.connect(self.ChangePsw)
         
         self._cConfig = cConfig
         self._cLoadWindow = cLoadWindow
         self._cOperation = cOpertation
             
         #检查用户是否已报名
-        self.Btn_AddWork.setEnabled(False)
-        self.Btn_AddWork.setText(self._translate("AddWorkWindow", "正在检查"))
+        #self.Btn_AddWork.setEnabled(False)
+        #self.Btn_AddWork.setText(self._translate("AddWorkWindow", "正在检查"))
+        
+        #QSS界面美化设置
+        file = open('./QT_UI/qss/AddWork.qss')
+        styleSheet = file.readlines()
+        styleSheet = ''.join(styleSheet).strip('\n')
+        self.setStyleSheet(styleSheet)
         
     #函数名称：CAddWork::Show
     #函数功能：显示加班窗口界面

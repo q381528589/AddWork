@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from PyQt5 import QtWidgets
+from PyQt5.QtGui import QCursor
 from UI.RegisterUI import *
 
 class CRegister(QtWidgets.QMainWindow, Ui_CRegister):
@@ -13,6 +14,10 @@ class CRegister(QtWidgets.QMainWindow, Ui_CRegister):
     _cLoadWindow = None
     #操作类
     _cOperation = None
+    #鼠标按下标志
+    __m_flag = False
+    #鼠标移动偏移
+    __m_Position = 0
     
     #函数名称：CRegister::__init__
     #函数功能：构造函数，用于构造注册窗口
@@ -42,6 +47,11 @@ class CRegister(QtWidgets.QMainWindow, Ui_CRegister):
         # 设置窗口标记（无边框|任务栏右键菜单）
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowSystemMenuHint)
         
+        #设置widget鼠标跟踪
+        self.setMouseTracking(True)
+        #设置鼠标跟踪判断默认值
+        self.__InitDrag()
+            
     #函数名称：CRegister::Show
     #函数功能：显示注册窗口
     #函数返回：无
@@ -57,13 +67,44 @@ class CRegister(QtWidgets.QMainWindow, Ui_CRegister):
         self.close()
         
     #函数名称：CRegister::keyPressEvent
-    #函数功能：出发键盘事件
+    #函数功能：触发键盘事件
     #函数返回：无
     #函数参数：e    按键事件
     def keyPressEvent(self, e):
         if e.key() == QtCore.Qt.Key_Enter:
             self.Regist()
 
+    #函数名称：CRegister::mousePressEvent
+    #函数功能：触发鼠标按下事件
+    #函数返回：无
+    #函数参数：event    按键事件
+    def mousePressEvent(self, event):
+        if (event.button() == QtCore.Qt.LeftButton):
+            self.__m_flag = True
+            #获取鼠标相对窗口的位置
+            self.__m_Position = event.globalPos() - self.pos()
+            event.accept()
+            #更改鼠标图标
+            self.setCursor(QtCore.Qt.OpenHandCursor)
+    
+    #函数名称：CRegister::mouseMoveEvent
+    #函数功能：触发鼠标移动事件
+    #函数返回：无
+    #函数参数：QMouseEvent    鼠标事件        
+    def mouseMoveEvent(self, QMouseEvent):
+        if (QtCore.Qt.LeftButton and self.__m_flag):
+            #更改窗口位置
+            self.move(QMouseEvent.globalPos()-self.__m_Position)
+            QMouseEvent.accept()
+    
+    #函数名称：CRegister::mouseReleaseEvent
+    #函数功能：触发鼠标移出事件
+    #函数返回：无
+    #函数参数：QMouseEvent    鼠标事件          
+    def mouseReleaseEvent(self, QMouseEvent):
+        self.__m_flag = False
+        self.setCursor(QtCore.Qt.ArrowCursor)
+        
     #函数名称：CRegister::Regist
     #函数功能：注册用户
     #函数返回：无
@@ -87,13 +128,14 @@ class CRegister(QtWidgets.QMainWindow, Ui_CRegister):
             self.Label_Status.setText(self._translate("CRegister", "密码不一致"))
             return
         
-        SrcRegCode = self.Text_RegCode.text()
+        self.Text_RegCode.setText(self._translate("CRegister", "开放注册阶段，目前无需注册码"))
+        '''SrcRegCode = self.Text_RegCode.text()
         if (None==SrcRegCode or ""==SrcRegCode):
             self.Label_Status.setText(self._translate("CRegister", "注册码不能为空"))
             return
         if (False == self._CalcRegCode(SrcRegCode)):
             self.Label_Status.setText(self._translate("CRegister", "注册码不正确"))
-            return
+            return'''
         
         szDinner = self.Combo_Dinner.currentText()
         if (None==szDinner or ""==szDinner):
@@ -181,3 +223,14 @@ class CRegister(QtWidgets.QMainWindow, Ui_CRegister):
             return False
         
         return False
+    
+    #函数名称：CRegister::initDrag
+    #函数功能：#设置鼠标跟踪判断默认值
+    #函数返回：无
+    #函数参数：无 
+    def __InitDrag(self):
+        # 设置鼠标跟踪判断扳机默认值
+        self._move_drag = False
+        self._corner_drag = False
+        self._bottom_drag = False
+        self._right_drag = False

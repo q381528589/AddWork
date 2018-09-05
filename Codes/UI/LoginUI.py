@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_LoginWindow(object):
     def setupUi(self, LoginWindow):
         LoginWindow.setObjectName("LoginWindow")
-        LoginWindow.resize(215, 180)
+        LoginWindow.resize(215, 160)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -22,7 +22,7 @@ class Ui_LoginWindow(object):
         LoginWindow.setWindowIcon(icon)
         LoginWindow.setWhatsThis("")
         self.QLoginWindow = QtWidgets.QWidget(LoginWindow)
-        self.QLoginWindow.setGeometry(QtCore.QRect(0, 0, 215, 180))
+        self.QLoginWindow.setGeometry(QtCore.QRect(0, 0, 215, 160))
         self.QLoginWindow.setObjectName("QLoginWindow")
         self.Label_User = QtWidgets.QLabel(self.QLoginWindow)
         self.Label_User.setGeometry(QtCore.QRect(20, 20, 50, 20))

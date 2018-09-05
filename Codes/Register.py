@@ -44,8 +44,9 @@ class CRegister(QtWidgets.QMainWindow, Ui_CRegister):
         styleSheet = ''.join(styleSheet).strip('\n')
         self.setStyleSheet(styleSheet)
         
-        # 设置窗口标记（无边框|任务栏右键菜单）
-        self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowSystemMenuHint)
+        # 设置窗口标记（最小化|无边框|任务栏右键菜单）
+        self.setWindowFlags(QtCore.Qt.WindowMinimizeButtonHint | 
+                            QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowSystemMenuHint)
         
         #设置widget鼠标跟踪
         self.setMouseTracking(True)
@@ -80,12 +81,14 @@ class CRegister(QtWidgets.QMainWindow, Ui_CRegister):
     #函数参数：event    按键事件
     def mousePressEvent(self, event):
         if (event.button() == QtCore.Qt.LeftButton):
-            self.__m_flag = True
             #获取鼠标相对窗口的位置
             self.__m_Position = event.globalPos() - self.pos()
-            event.accept()
-            #更改鼠标图标
-            self.setCursor(QtCore.Qt.OpenHandCursor)
+            #高于关闭按钮才有效
+            if (self.__m_Position.y() <= self.Tool_Close.height()):
+                self.__m_flag = True
+                event.accept()
+                #更改鼠标图标
+                #self.setCursor(QtCore.Qt.OpenHandCursor)
     
     #函数名称：CRegister::mouseMoveEvent
     #函数功能：触发鼠标移动事件
@@ -103,7 +106,7 @@ class CRegister(QtWidgets.QMainWindow, Ui_CRegister):
     #函数参数：QMouseEvent    鼠标事件          
     def mouseReleaseEvent(self, QMouseEvent):
         self.__m_flag = False
-        self.setCursor(QtCore.Qt.ArrowCursor)
+        #self.setCursor(QtCore.Qt.ArrowCursor)
         
     #函数名称：CRegister::Regist
     #函数功能：注册用户

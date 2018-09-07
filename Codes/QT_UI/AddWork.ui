@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>375</width>
-    <height>290</height>
+    <height>280</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -27,25 +27,12 @@
    <enum>Qt::ToolButtonTextUnderIcon</enum>
   </property>
   <widget class="QWidget" name="CAddWork">
-   <widget class="QLabel" name="Label_User">
-    <property name="geometry">
-     <rect>
-      <x>120</x>
-      <y>20</y>
-      <width>70</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>当前用户：</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="Label_CurUser">
     <property name="geometry">
      <rect>
-      <x>180</x>
-      <y>20</y>
-      <width>80</width>
+      <x>10</x>
+      <y>0</y>
+      <width>180</width>
       <height>20</height>
      </rect>
     </property>
@@ -57,7 +44,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>50</y>
+      <y>40</y>
       <width>60</width>
       <height>16</height>
      </rect>
@@ -70,7 +57,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>80</y>
+      <y>70</y>
       <width>60</width>
       <height>16</height>
      </rect>
@@ -83,7 +70,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>110</y>
+      <y>100</y>
       <width>60</width>
       <height>16</height>
      </rect>
@@ -96,7 +83,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>140</y>
+      <y>130</y>
       <width>330</width>
       <height>120</height>
      </rect>
@@ -109,7 +96,7 @@
     <property name="geometry">
      <rect>
       <x>90</x>
-      <y>110</y>
+      <y>100</y>
       <width>260</width>
       <height>20</height>
      </rect>
@@ -119,7 +106,7 @@
     <property name="geometry">
      <rect>
       <x>90</x>
-      <y>50</y>
+      <y>40</y>
       <width>70</width>
       <height>20</height>
      </rect>
@@ -139,7 +126,7 @@
     <property name="geometry">
      <rect>
       <x>90</x>
-      <y>80</y>
+      <y>70</y>
       <width>70</width>
       <height>20</height>
      </rect>
@@ -159,7 +146,7 @@
     <property name="geometry">
      <rect>
       <x>275</x>
-      <y>50</y>
+      <y>40</y>
       <width>75</width>
       <height>50</height>
      </rect>

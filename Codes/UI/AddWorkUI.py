@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_AddWorkWindow(object):
     def setupUi(self, AddWorkWindow):
         AddWorkWindow.setObjectName("AddWorkWindow")
-        AddWorkWindow.resize(375, 290)
+        AddWorkWindow.resize(375, 280)
         AddWorkWindow.setFixedSize(AddWorkWindow.width(), AddWorkWindow.height()); 
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -24,11 +24,8 @@ class Ui_AddWorkWindow(object):
         AddWorkWindow.setToolButtonStyle(QtCore.Qt.ToolButtonTextUnderIcon)
         self.CAddWork = QtWidgets.QWidget(AddWorkWindow)
         self.CAddWork.setObjectName("CAddWork")
-        self.Label_User = QtWidgets.QLabel(self.CAddWork)
-        self.Label_User.setGeometry(QtCore.QRect(120, 20, 70, 20))
-        self.Label_User.setObjectName("Label_User")
         self.Label_CurUser = QtWidgets.QLabel(self.CAddWork)
-        self.Label_CurUser.setGeometry(QtCore.QRect(180, 20, 80, 20))
+        self.Label_CurUser.setGeometry(QtCore.QRect(10, 0, 180, 20))
         self.Label_CurUser.setObjectName("Label_CurUser")
         self.Label_Dinner = QtWidgets.QLabel(self.CAddWork)
         self.Label_Dinner.setGeometry(QtCore.QRect(20, 50, 60, 16))
@@ -86,7 +83,6 @@ class Ui_AddWorkWindow(object):
     def retranslateUi(self, AddWorkWindow):
         _translate = QtCore.QCoreApplication.translate
         AddWorkWindow.setWindowTitle(_translate("AddWorkWindow", "一键加班"))
-        self.Label_User.setText(_translate("AddWorkWindow", "当前用户："))
         self.Label_CurUser.setText(_translate("AddWorkWindow", "哈哈哈哈哈"))
         self.Label_Dinner.setText(_translate("AddWorkWindow", "加班餐：  "))
         self.Label_Bus.setText(_translate("AddWorkWindow", "加班班车："))

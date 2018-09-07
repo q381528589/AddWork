@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import sys
+import sys, logging
+import time
 from PyQt5 import QtWidgets, Qt
 
 from UI.AddWorkUI import *
@@ -52,20 +53,32 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
         #设置下拉菜单
         menu = QMenu(self)
         self.ChgPsw = QtWidgets.QAction("修改密码", self)
+        self.AutoRun = QtWidgets.QAction("自动报名", self)
         self.Logout = QtWidgets.QAction("退出登录", self)
+        self.Opinion = QtWidgets.QAction("意见反馈", self)
+        self.CancelAccount = QtWidgets.QAction("注销账号", self)
+        self.About = QtWidgets.QAction("关于", self)
         menu.addAction(self.ChgPsw)
-        menu.addSeparator()
+        menu.addAction(self.AutoRun)
         menu.addAction(self.Logout)
+        menu.addAction(self.Opinion)
+        menu.addSeparator()
+        menu.addAction(self.CancelAccount)
+        menu.addSeparator()
+        menu.addAction(self.About)
         menu.addSeparator()
         self.Btn_Settings.setMenu(menu)
         self.ChgPsw.triggered.connect(self.ChangePsw)
         self.Logout.triggered.connect(self.Exit)
         
         #QSS界面美化设置
-        file = open('./QT_UI/qss/AddWork.qss')
-        styleSheet = file.readlines()
-        styleSheet = ''.join(styleSheet).strip('\n')
-        self.setStyleSheet(styleSheet)
+        try:
+            file = open('./QT_UI/qss/AddWork.qss')
+            styleSheet = file.readlines()
+            styleSheet = ''.join(styleSheet).strip('\n')
+            self.setStyleSheet(styleSheet)
+        except IOError as err:
+            logging.critical("无法加载QT_UI/qss/AddWork.qss：%s" % err)
         
         #设置窗口标记（最小化|无边框|任务栏右键菜单）
         self.setWindowFlags(QtCore.Qt.WindowMinimizeButtonHint | 
@@ -103,7 +116,7 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
             #检查用户是否报名
             nRet = self._cOperation.CheckAddWork(self._cConfig)
             
-            if (0 == nRet):
+            '''if (0 == nRet):
                 self.Btn_AddWork.setEnabled(True)
                 self.Btn_AddWork.setText(self._translate("AddWorkWindow", "一键加班"))
                 self._bCheck = True
@@ -115,7 +128,7 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
                 self._WriteStatus(cError.GetErrMsg(nRet))
                 self.Btn_AddWork.setEnabled(True)
                 self.Btn_AddWork.setText(self._translate("AddWorkWindow", "一键加班"))
-                self._bCheck = True
+                self._bCheck = True'''
          
         return
     
@@ -124,8 +137,32 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
     #函数返回：cConfig    ：用户信息配置
     #函数参数：无        
     def _ReadConfig(self, cConfig):
-        #显示用户名
-        self.Label_CurUser.setText(self._translate("AddWorkWindow", "%s" % (cConfig.UserName)))
+        #标题
+        szTitle = ""
+        #当前小时
+        Hour = time.localtime().tm_hour
+        #判断时间对应的时间段
+        if (Hour>=0 and Hour<=4):
+            szTitle += "夜深了, "
+        elif (Hour>4 and Hour<=5):
+            szTitle += "清晨好, "
+        elif (Hour>5 and Hour<=8):
+            szTitle += "早上好, "
+        elif (Hour>8 and Hour<=10):
+            szTitle += "上午好, "
+        elif (Hour>10 and Hour<=12):
+            szTitle += "中午好, "
+        elif (Hour>12 and Hour<=17):
+            szTitle += "下午好, "
+        elif (Hour>17 and Hour<=18):
+            szTitle += "下午好, "
+        elif (Hour>18 and Hour<=23):
+            szTitle += "晚上好, "
+        #用户名
+        szTitle += cConfig.UserName
+        
+        #显示标题
+        self.Label_CurUser.setText(self._translate("AddWorkWindow", "%s" % (szTitle)))
         #加班餐
         Index = int(cConfig.Dinner)
         self.Combo_Dinner.setCurrentIndex((~Index)&0x01)

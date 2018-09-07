@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import logging
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QCursor
 from UI.RegisterUI import *
@@ -39,11 +40,13 @@ class CRegister(QtWidgets.QMainWindow, Ui_CRegister):
         self.Tool_Close.clicked.connect(self.close)
         
         #QSS界面美化设置
-        file = open('./QT_UI/qss/Register.qss')
-        styleSheet = file.readlines()
-        styleSheet = ''.join(styleSheet).strip('\n')
-        self.setStyleSheet(styleSheet)
-        
+        try:
+            file = open('./QT_UI/qss/Register.qss')
+            styleSheet = file.readlines()
+            styleSheet = ''.join(styleSheet).strip('\n')
+            self.setStyleSheet(styleSheet)
+        except IOError as err:
+            logging.critical("无法加载QT_UI/qss/AddWork.qss：%s" % err)
         # 设置窗口标记（最小化|无边框|任务栏右键菜单）
         self.setWindowFlags(QtCore.Qt.WindowMinimizeButtonHint | 
                             QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowSystemMenuHint)

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import sys
+import sys, logging
 from PyQt5 import QtWidgets
 from UI.LoginUI import *
 
@@ -38,10 +38,13 @@ class CLogin(QtWidgets.QMainWindow, Ui_LoginWindow):
         self.Tool_Close.clicked.connect(self.close)
         
         #加载QSS
-        file = open('./QT_UI/qss/Login.qss')
-        styleSheet = file.readlines()
-        styleSheet = ''.join(styleSheet).strip('\n')
-        self.setStyleSheet(styleSheet)
+        try:
+            file = open('./QT_UI/qss/Login.qss')
+            styleSheet = file.readlines()
+            styleSheet = ''.join(styleSheet).strip('\n')
+            self.setStyleSheet(styleSheet)
+        except IOError as err:
+            logging.critical("无法加载QT_UI/qss/AddWork.qss：%s" % err)
         
         # 设置窗口标记（最小化|无边框|任务栏右键菜单）
         self.setWindowFlags(QtCore.Qt.WindowMinimizeButtonHint | 

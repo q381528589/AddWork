@@ -9,6 +9,9 @@ QWidget#CAddWork {
 QLabel {
     border: none;}
 
+QLabel#Label_CurUser {
+    color: rgb(2, 65, 132);
+}
 /**********ComboBox**********/
 QComboBox {
     height: 20px;

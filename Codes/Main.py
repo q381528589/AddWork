@@ -7,6 +7,7 @@ from Register import CRegister
 from Login import CLogin
 from AddWork import CAddWork
 from ChgPsw import CChgPsw
+from About import CAbout
 from Operation import COperation
 from ConfigFileIO import CFileMng, CConfig
 from DESCode import CDESCode
@@ -102,6 +103,8 @@ class CMain:
     m_pcAddWork = None
     #修改密码界面
     m_pcChangePsw = None
+    #关于界面
+    m_pcAbout = None
     #自动更新类
     m_pcUpdate = None
     
@@ -157,6 +160,10 @@ class CMain:
             if (None == self.m_pcChangePsw):
                 self.m_pcChangePsw = CChgPsw(self, self.m_cConfig, self.m_cOperation)
             self.m_pcChangePsw.Show()
+        elif (4 == UIIndex):
+            if (None == self.m_pcAbout):
+                self.m_pcAbout = CAbout(self, self.m_cConfig, self.m_cOperation)
+            self.m_pcAbout.Show()
         else:
             logging.error("没有找到有效的窗口界面")
             return -1
@@ -176,6 +183,8 @@ class CMain:
             self.m_pcAddWork.Close()
         elif (3==UIIndex and None!=self.m_pcChangePsw):
             self.m_pcChangePsw.Close()
+        elif (4==UIIndex and None!=self.m_pcAbout):
+            self.m_pcAbout.Close()
         else:
             logging.error("没有找到有效的窗口界面")
             return -1
@@ -187,7 +196,7 @@ if __name__ == '__main__':
     #加解密算法
     cDesCode = CDESCode()
     #配置文件
-    cCfgFile = CFileMng("./AddWork.cfg")
+    cCfgFile = CFileMng("./AddWork.cfg", "version.txt")
     #用户配置
     cConfig = CConfig(cCfgFile, cDesCode)
     #读取配置是否成功

@@ -36,9 +36,7 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
     def __init__(self, cLoadWindow, cConfig, cOpertation):
         super(CAddWork, self).__init__()
         self.setupUi(self)
-        #self.Btn_Exit.clicked.connect(self.Exit)
         self.Btn_AddWork.clicked.connect(self.AddWork)
-        #self.Btn_ChgPsw.clicked.connect(self.ChangePsw)
         self.Tool_Min.clicked.connect(self.showMinimized)
         self.Tool_Close.clicked.connect(self.close)
         
@@ -68,8 +66,10 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
         menu.addAction(self.About)
         menu.addSeparator()
         self.Btn_Settings.setMenu(menu)
-        self.ChgPsw.triggered.connect(self.ChangePsw)
-        self.Logout.triggered.connect(self.Exit)
+        #设置关联函数
+        self.ChgPsw.triggered.connect(self.__ChangePsw)
+        self.Logout.triggered.connect(self.__Exit)
+        self.About.triggered.connect(self.__About)
         
         #QSS界面美化设置
         try:
@@ -172,16 +172,6 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
         #加班理由
         self.Edit_Reason.setText(self._translate("AddWorkWindow", "%s" % (cConfig.Reason)))
     
-    #函数名称：CAddWork::Exit
-    #函数功能：退出登录
-    #函数返回：无
-    #函数参数：无        
-    def Exit(self):
-        #到登录界面
-        self._cLoadWindow.CloseUI(3)
-        self._cLoadWindow.ShowUI(1)
-        self.hide()
-    
     #函数名称：CAddWork::AddWork
     #函数功能：执行一键加班
     #函数返回：无
@@ -246,16 +236,7 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
         #更新文件
         if (True == self._cConfig.bUpdate):
             self._cConfig.WriteFile()
-        return
-    
-    #函数名称：CAddWork::ChangePsw
-    #函数功能：弹出修改密码界面
-    #函数返回：无
-    #函数参数：无  
-    def ChangePsw(self):
-        #到修改密码界面
-        self._cLoadWindow.ShowUI(3)
-        
+        return       
 
     #函数名称：CAddWork::eventFilter
     #函数功能：处理事件操作
@@ -347,4 +328,30 @@ class CAddWork(QtWidgets.QMainWindow, Ui_AddWorkWindow):
         self._move_drag = False
         self._corner_drag = False
         self._bottom_drag = False
-        self._right_drag = False  
+        self._right_drag = False
+    
+    #函数名称：CAddWork::__ChangePsw
+    #函数功能：弹出修改密码界面
+    #函数返回：无
+    #函数参数：无  
+    def __ChangePsw(self):
+        #到修改密码界面
+        self._cLoadWindow.ShowUI(3)
+    
+    #函数名称：CAddWork::Exit
+    #函数功能：退出登录
+    #函数返回：无
+    #函数参数：无        
+    def __Exit(self):
+        #到登录界面
+        self._cLoadWindow.CloseUI(3)
+        self._cLoadWindow.ShowUI(1)
+        self.hide()  
+
+    #函数名称：CAddWork::__About
+    #函数功能：弹出关于界面
+    #函数返回：无
+    #函数参数：无    
+    def __About(self):
+        self._cLoadWindow.ShowUI(4)
+        

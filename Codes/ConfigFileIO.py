@@ -19,6 +19,8 @@ class CConfig:
     Reason = ""
     #跳过登录
     bSkip = False
+    #软件版本
+    Version = ""
     #配置文件是否被修改
     bFileChange = False
     
@@ -53,7 +55,12 @@ class CConfig:
             nRet = self.V2Decrypt(FileText)
         else:
             nRet = self.V3Decrypt(FileText)
-
+            
+        #软件版本
+        self.Version = self._cCfgFile.ReadVersionFile()
+        if (None == self.Version):
+            return 1
+        
         return nRet
 
     #函数名称：CConfig::WriteFile
@@ -262,13 +269,16 @@ class CConfig:
 #文件读写类
 class CFileMng:
     __m_szPath = ""
+    __m_szVersionPath = ""
 
     #函数名称：CFileMng::__init__
     #函数功能：构造函数
     #函数返回：无
-    #函数参数：szFilePath：文件路径
-    def __init__(self, szFilePath):
-        self.__m_szPath = szFilePath
+    #函数参数：szConfigPath：配置文件路径
+    #函数参数：szVersionPath：版本文件路径
+    def __init__(self, szConfigPath, szVersionPath):
+        self.__m_szPath = szConfigPath
+        self.__m_szVersionPath = szVersionPath
 
 
     #函数名称：CFileMng::ReadTextFile
@@ -287,6 +297,7 @@ class CFileMng:
             Text = File_Object.read()
         except:
             File_Object.close()
+            return None
 
         File_Object.close()
         return Text
@@ -308,6 +319,7 @@ class CFileMng:
             File_Object.write(szText)
         except:
             File_Object.close()
+            return False
 
         File_Object.close()
         return True;
@@ -322,3 +334,23 @@ class CFileMng:
             return
         os.remove(self.__m_szPath)
         return
+    
+    #函数名称：CFileMng::ReadVersionFile
+    #函数功能：读取软件版本
+    #函数返回：软件版本
+    #函数参数：无
+    def ReadVersionFile(self):
+        #读取文件
+        try:
+            File_Object = open(self.__m_szVersionPath, 'r')
+            Text = File_Object.read()
+            File_Object.close()
+        except:
+            return None
+        
+        #解析AddWork版本
+        Index = Text.find("AddWork=")
+        if (-1 == Index):
+            return None
+        Index += len("AddWork=")
+        return Text[Index:]

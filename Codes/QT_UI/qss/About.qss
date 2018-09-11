@@ -1,0 +1,24 @@
+/**********QWidget**********/
+QDialog#About {
+    border: 1px solid rgb(111, 156, 207);
+    border-radius: 4px;
+    background: rgb(232, 241, 252);
+}
+
+/**********Label**********/
+QLabel {
+    border: none;}
+	
+QLabel#Label_Title {
+    color: rgb(2, 65, 132);
+}
+/**********ToolButton**********/
+QToolButton#Tool_Close {
+    border-image: url(./QT_UI/images/close.png);
+    color: rgb(2, 65, 132);
+    background: transparent;
+    padding: 25px;
+}
+QToolButton#Tool_Close:hover {
+    background: rgb(187, 212, 238);
+}

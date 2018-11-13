@@ -45,6 +45,12 @@ class CConfig:
     #函数参数：无
     #函数参数：无
     def ReadFile(self):
+        #软件版本
+        self.Version = self._cCfgFile.ReadVersionFile()
+        if (None == self.Version):
+            logging.error("打开版本信息失败")
+            return 1
+        
         FileText = self._cCfgFile.ReadTextFile()
         if None == FileText:
             logging.error("打开配置文件失败")
@@ -55,11 +61,6 @@ class CConfig:
             nRet = self.V2Decrypt(FileText)
         else:
             nRet = self.V3Decrypt(FileText)
-            
-        #软件版本
-        self.Version = self._cCfgFile.ReadVersionFile()
-        if (None == self.Version):
-            return 1
         
         return nRet
 
